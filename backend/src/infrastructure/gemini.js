@@ -205,12 +205,9 @@ export class GeminiProvider {
         return parseJsonText(extractText(payload));
       } catch (error) {
         if (error?.name === 'AbortError') {
-          lastError = new AppError(504, 'AI_TIMEOUT', 'AI generation timed out');
-          if (attempt < DEFAULT_RETRIES) {
-            await sleep(retryDelay(attempt));
-            continue;
-          }
-          throw lastError;
+          // A timeout may mean the provider is still processing the request.
+          // Do not retry it automatically, which could duplicate expensive work.
+          throw new AppError(504, 'AI_TIMEOUT', 'AI generation timed out');
         }
         if (error instanceof AppError) throw error;
         lastError = new AppError(502, 'AI_PROVIDER_ERROR', 'Unable to reach the AI provider');
