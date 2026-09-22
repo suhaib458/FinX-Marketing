@@ -9,6 +9,7 @@ import './styles/onboarding.css';
 import './styles/dashboard.css';
 import './styles/create.css';
 import './styles/premium-reference.css';
+import './styles/premium-phase2.css';
 import App from './App';
 
 createRoot(document.getElementById('root')).render(
