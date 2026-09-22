@@ -105,7 +105,6 @@ describe('XKiroProvider', () => {
     expect(body).toMatchObject({
       model: 'google/gemini-3.7-flash',
       response_format: { type: 'json_object' },
-      reasoning_effort: 'low',
       stream: false,
     });
     expect(body.messages[0].content).toContain('"headline"');
