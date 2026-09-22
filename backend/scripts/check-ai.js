@@ -6,7 +6,7 @@ async function main() {
   const provider = createGeminiProvider(config);
   const result = await provider.checkConnection();
 
-  console.log(JSON.stringify(result, null, 2));
+  process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
 
   if (result.status !== 'ready') {
     process.exitCode = 1;
