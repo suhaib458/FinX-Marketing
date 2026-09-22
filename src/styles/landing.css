@@ -4342,3 +4342,105 @@
     gap: 22px 14px;
   }
 }
+
+
+@media (max-width: 768px) {
+  .landing-mobile-menu {
+    display: block !important;
+  }
+
+  .landing-mobile-menu__nav {
+    display: grid;
+    gap: 5px;
+  }
+
+  .landing-mobile-menu__link,
+  .landing-mobile-menu__utility {
+    width: 100%;
+    min-height: 44px;
+    padding: 9px 11px;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    color: #d8c3d0;
+    font-family: "Noto Sans Arabic", "Segoe UI", Tahoma, Arial, sans-serif;
+    font-size: .8rem;
+    font-weight: 650;
+    text-decoration: none;
+    text-align: start;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    background: rgba(255,255,255,.008);
+    cursor: pointer;
+  }
+
+  [dir='ltr'] .landing-mobile-menu__link,
+  [dir='ltr'] .landing-mobile-menu__utility {
+    font-family: var(--font-english);
+  }
+
+  .landing-mobile-menu__link svg,
+  .landing-mobile-menu__utility svg {
+    flex: 0 0 auto;
+    color: #b57e9f;
+  }
+
+  .landing-mobile-menu__link:hover,
+  .landing-mobile-menu__utility:hover {
+    color: #fff0f7;
+    border-color: rgba(239, 112, 187, .12);
+    background: rgba(229, 76, 167, .05);
+  }
+
+  .landing-mobile-menu__divider {
+    height: 1px;
+    margin: 8px 2px;
+    background: rgba(244, 117, 193, .08);
+  }
+
+  .landing-mobile-menu__utility {
+    justify-content: flex-start;
+    color: #b9a3b1;
+  }
+
+  .landing-mobile-menu__auth {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 7px;
+    margin-top: 9px;
+  }
+
+  .landing-mobile-menu__secondary,
+  .landing-mobile-menu__primary {
+    width: 100%;
+    min-height: 43px;
+    padding: 9px 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-family: "Noto Sans Arabic", "Segoe UI", Tahoma, Arial, sans-serif;
+    font-size: .8rem;
+    font-weight: 700;
+    border-radius: 10px;
+    cursor: pointer;
+  }
+
+  [dir='ltr'] .landing-mobile-menu__secondary,
+  [dir='ltr'] .landing-mobile-menu__primary {
+    font-family: var(--font-english);
+  }
+
+  .landing-mobile-menu__secondary {
+    color: #eadce5;
+    border: 1px solid rgba(237, 143, 198, .20);
+    background: rgba(255,255,255,.012);
+  }
+
+  .landing-mobile-menu__primary {
+    color: #fff;
+    border: 1px solid rgba(255, 180, 220, .16);
+    background: linear-gradient(135deg, #ef75b8, #d94fa3 58%, #be438f);
+    box-shadow: 0 9px 24px rgba(226, 71, 158, .22);
+  }
+}
