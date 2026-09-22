@@ -24,7 +24,9 @@ function normalizeEmail(email) {
 
 function isTrustedGoogleEmail(identity) {
   const email = normalizeEmail(identity?.email);
-  return identity?.provider === 'google.com' && email.endsWith('@gmail.com');
+  const providers = Array.isArray(identity?.providers) ? identity.providers : [];
+  const isGoogleIdentity = identity?.provider === 'google.com' || providers.includes('google.com');
+  return isGoogleIdentity && Boolean(email);
 }
 
 function verifiedIdentity(identity) {
@@ -38,6 +40,16 @@ function verifiedIdentity(identity) {
   };
 
   if (!normalized.email || !normalized.emailVerified) {
+    if (process.env.NODE_ENV === 'development') {
+      const domain = normalized.email.includes('@') ? normalized.email.split('@').pop() : null;
+      console.warn('[AUTH_DIAGNOSTIC=unverified_identity]', {
+        provider: identity?.provider || null,
+        providers: Array.isArray(identity?.providers) ? identity.providers : [],
+        hasEmail: Boolean(normalized.email),
+        emailDomain: domain,
+        emailVerified: Boolean(identity?.emailVerified),
+      });
+    }
     throw new AppError(403, 'AUTH_EMAIL_NOT_VERIFIED', 'Email verification is required');
   }
 
