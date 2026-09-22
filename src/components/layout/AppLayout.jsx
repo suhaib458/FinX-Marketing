@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, PlusCircle, FolderOpen, BarChart3, Settings,
@@ -30,6 +30,7 @@ function AppLayout() {
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [credits, setCredits] = useState(() => mockCredits.getBalance());
+  const layoutRef = useRef(null);
 
   // Clear toasts on route change
   useEffect(() => {
@@ -53,8 +54,15 @@ function AppLayout() {
 
   const closeSidebar = useCallback(() => setSidebarOpen(false), []);
 
+  const handlePointerMove = useCallback((event) => {
+    if (!layoutRef.current || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    layoutRef.current.style.setProperty('--pointer-x', `${event.clientX}px`);
+    layoutRef.current.style.setProperty('--pointer-y', `${event.clientY}px`);
+  }, []);
+
   return (
-    <div className="app-layout">
+    <div className="app-layout" ref={layoutRef} onPointerMove={handlePointerMove}>
+      <div className="app-ambient-pointer" aria-hidden="true" />
       {/* Sidebar overlay (mobile) */}
       <div
         className={`sidebar-overlay ${sidebarOpen ? 'sidebar-overlay--visible' : ''}`}
