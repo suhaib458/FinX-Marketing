@@ -58,6 +58,34 @@ function ToolMiniPreview({ toolKey }) {
   return <div className="tool-mini tool-mini--campaign" aria-hidden="true">{Array.from({ length: 7 }, (_, i) => <i key={i} />)}</div>;
 }
 
+function ActivityVisual({ item, result }) {
+  const Icon = activityTypeIcons[item.type] || MessageSquare;
+  const productImage = result?.content?.productImage;
+
+  if (productImage) {
+    return (
+      <div className="dash-activity-visual dash-activity-visual--image">
+        <img src={productImage} alt="" />
+        <span><Icon size={14} /></span>
+      </div>
+    );
+  }
+
+  return (
+    <div className={`dash-activity-visual dash-activity-visual--${item.type}`}>
+      <span><Icon size={16} /></span>
+      {item.type === 'campaign' && (
+        <div className="dash-activity-visual__bars" aria-hidden="true">
+          {[42, 72, 56, 88].map((height, index) => <i key={index} style={{ height: `${height}%` }} />)}
+        </div>
+      )}
+      {item.type === 'social-post' && (
+        <div className="dash-activity-visual__lines" aria-hidden="true"><i /><i /><i /></div>
+      )}
+    </div>
+  );
+}
+
 function Dashboard() {
   const { t, language } = useLanguage();
   const { user } = useAuth();
@@ -67,7 +95,7 @@ function Dashboard() {
   const brand = mockBrand.getProfile();
   const credits = mockCredits.getBalance();
   const stats = mockGeneration.getStats();
-  const activity = mockGeneration.getRecentActivity(5);
+  const activity = mockGeneration.getRecentActivity(4);
   const tools = ['socialPost', 'adDesign', 'contentIdeas', 'campaign'];
 
   const businessName = brand?.businessName || '';
@@ -198,19 +226,17 @@ function Dashboard() {
         {activity.length > 0 ? (
           <div className="dash-activity__list">
             {activity.map((item) => {
-              const ActIcon = activityTypeIcons[item.type] || MessageSquare;
               const toolTranslationKey = item.type === 'social-post' ? 'socialPost'
                 : item.type === 'ad-design' ? 'adDesign'
                 : item.type === 'content-ideas' ? 'contentIdeas' : 'campaign';
+              const result = mockGeneration.getResult(item.id);
               return (
                 <button
                   key={item.id}
-                  className="dash-activity__item fx-card fx-card--quiet fx-card--interactive"
+                  className="dash-activity__item fx-card fx-card--interactive"
                   onClick={() => navigate(`/app/result/${item.id}`)}
                 >
-                  <div className="dash-activity__item-icon">
-                    <ActIcon size={18} />
-                  </div>
+                  <ActivityVisual item={item} result={result} />
                   <div className="dash-activity__item-info">
                     <span className="dash-activity__item-title">{t.tools[toolTranslationKey]?.title}</span>
                     <span className="dash-activity__item-meta">
