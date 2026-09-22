@@ -16,6 +16,12 @@ const tokenVerifier = {
       email: 'google-user@example.com', picture: 'https://example.com/photo.png',
       firebase: { sign_in_provider: 'google.com' },
     };
+    if (token === 'google-gmail-unverified') return {
+      ...verifiedPassword, uid: 'firebase-google-gmail-user', sub: 'firebase-google-gmail-user',
+      email: 'trusted-user@gmail.com', email_verified: false,
+      picture: 'https://example.com/google-photo.png',
+      firebase: { sign_in_provider: 'google.com' },
+    };
     if (token === 'unverified') return { ...verifiedPassword, email_verified: false };
     if (token === 'conflict') return {
       ...verifiedPassword, uid: 'different-firebase-user', sub: 'different-firebase-user',
@@ -82,6 +88,50 @@ describe('Firebase authentication', () => {
     const response = await request(app).get('/api/v1/me').set('authorization', 'Bearer google');
     expect(response.status).toBe(200);
     expect(response.body.data).toMatchObject({ emailVerified: true, photoUrl: 'https://example.com/photo.png' });
+  });
+
+  it('treats Google @gmail.com as trusted even when the token verification flag is false', async () => {
+    const { app } = buildTestApp({ tokenVerifier });
+    const session = await request(app).post('/api/v1/auth/session')
+      .set('authorization', 'Bearer google-gmail-unverified');
+    expect(session.status).toBe(200);
+    expect(session.body.data.user).toMatchObject({
+      email: 'trusted-user@gmail.com',
+      emailVerified: true,
+    });
+
+    const me = await request(app).get('/api/v1/me')
+      .set('authorization', 'Bearer google-gmail-unverified');
+    expect(me.status).toBe(200);
+    expect(me.body.data.email).toBe('trusted-user@gmail.com');
+  });
+
+  it('maps trusted Google Gmail login to an existing app account with the same email', async () => {
+    const repositories = createMemoryRepositories();
+    repositories.state.users.push({
+      id: 'existing-gmail-user',
+      firebaseUid: 'password-firebase-uid',
+      email: 'trusted-user@gmail.com',
+      emailVerified: true,
+      name: 'Existing Gmail User',
+      photoUrl: null,
+      role: 'USER',
+      status: 'ACTIVE',
+      planCode: 'free',
+      onboardingCompleted: true,
+      locale: 'ar',
+      timezone: 'Asia/Amman',
+      createdAt: '2026-08-14T10:00:00.000Z',
+      deletedAt: null,
+      wallet: { balance: 100 },
+    });
+    const { app } = buildTestApp({ tokenVerifier, repositories });
+    const session = await request(app).post('/api/v1/auth/session')
+      .set('authorization', 'Bearer google-gmail-unverified');
+    expect(session.status).toBe(200);
+    expect(session.body.data.user.id).toBe('existing-gmail-user');
+    expect(repositories.state.users.find((user) => user.id === 'existing-gmail-user').firebaseUid)
+      .toBe('password-firebase-uid');
   });
 
   it('returns a safe conflict instead of auto-linking an existing email', async () => {
