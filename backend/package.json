@@ -24,7 +24,8 @@
     "db:status": "prisma migrate status",
     "db:seed": "prisma db seed",
     "audit": "npm audit",
-    "ai:check": "node scripts/check-ai.js"
+    "ai:check": "node scripts/check-ai.js",
+    "ai:models": "node scripts/list-ai-models.js"
   },
   "dependencies": {
     "@prisma/adapter-mariadb": "^7.0.0",
