@@ -95,11 +95,6 @@ function PublicLayout() {
                   <BookOpen size={15} />
                 </button>
 
-                <a href="#pricing" onClick={(e) => scrollToSection(e, 'pricing')} className="landing-nav-link">
-                  <span>{t.nav.pricing}</span>
-                  <Tag size={15} />
-                </a>
-
                 <a href="#how-it-works" onClick={(e) => scrollToSection(e, 'how-it-works')} className="landing-nav-link">
                   <span>{t.nav.howItWorks}</span>
                   <Settings size={15} />
@@ -140,9 +135,6 @@ function PublicLayout() {
                 </a>
                 <a href="#how-it-works" onClick={(e) => scrollToSection(e, 'how-it-works')} className="public-layout__nav-link">
                   {t.nav.howItWorks}
-                </a>
-                <a href="#pricing" onClick={(e) => scrollToSection(e, 'pricing')} className="public-layout__nav-link">
-                  {t.nav.pricing}
                 </a>
               </nav>
 
@@ -209,10 +201,6 @@ function PublicLayout() {
               <a href="#how-it-works" onClick={(e) => scrollToSection(e, 'how-it-works')} className="landing-mobile-menu__link">
                 <Settings size={16} />
                 <span>{t.nav.howItWorks}</span>
-              </a>
-              <a href="#pricing" onClick={(e) => scrollToSection(e, 'pricing')} className="landing-mobile-menu__link">
-                <Tag size={16} />
-                <span>{t.nav.pricing}</span>
               </a>
               <button
                 type="button"
@@ -287,9 +275,6 @@ function PublicLayout() {
               </a>
               <a href="#how-it-works" onClick={(e) => scrollToSection(e, 'how-it-works')} className="public-layout__mobile-link">
                 {t.nav.howItWorks}
-              </a>
-              <a href="#pricing" onClick={(e) => scrollToSection(e, 'pricing')} className="public-layout__mobile-link">
-                {t.nav.pricing}
               </a>
             </nav>
             <div className="public-layout__mobile-actions">
