@@ -229,12 +229,17 @@ export class XKiroProvider {
         fallbackUsed: selected.fallbackUsed,
       };
     } catch (error) {
+      const code = error?.name === 'AbortError' ? 'AI_TIMEOUT' : (error?.code || 'AI_PROVIDER_ERROR');
       return {
-        status: error?.name === 'AbortError' ? 'timeout' : 'unavailable',
+        status: code === 'AI_AUTH_ERROR'
+          ? 'invalid_key'
+          : code === 'AI_TIMEOUT'
+            ? 'timeout'
+            : 'unavailable',
         configured: true,
         provider: 'xkiro',
         model: this.model,
-        code: error?.name === 'AbortError' ? 'AI_TIMEOUT' : (error?.code || 'AI_PROVIDER_ERROR'),
+        code,
       };
     }
   }
