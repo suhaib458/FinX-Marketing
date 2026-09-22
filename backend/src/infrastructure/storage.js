@@ -1,11 +1,36 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
 import { getDownloadURL, getStorage } from 'firebase-admin/storage';
 import { getOrCreateAdminApp } from './firebase-admin.js';
+
+function safeLocalPath(rootDir, storageKey) {
+  const normalizedKey = String(storageKey || '').replace(/\\/g, '/');
+  if (!normalizedKey || normalizedKey.startsWith('/') || normalizedKey.split('/').includes('..')) {
+    throw new Error('Invalid local storage key');
+  }
+
+  const absolute = path.resolve(rootDir, normalizedKey);
+  const root = path.resolve(rootDir);
+  if (absolute !== root && !absolute.startsWith(`${root}${path.sep}`)) {
+    throw new Error('Invalid local storage path');
+  }
+  return absolute;
+}
+
+function publicLocalUrl(storageKey) {
+  const encoded = String(storageKey)
+    .split('/')
+    .map((segment) => encodeURIComponent(segment))
+    .join('/');
+  return `/api/v1/uploads/${encoded}`;
+}
 
 export class FirebaseStorageProvider {
   constructor({ bucketName, adminApp, logger }) {
     if (!bucketName) {
       throw new Error('Firebase storage bucket name is required');
     }
+    this.mode = 'firebase';
     this.bucketName = bucketName;
     this.adminApp = adminApp;
     this.logger = logger;
@@ -35,7 +60,6 @@ export class FirebaseStorageProvider {
     try {
       publicUrl = await getDownloadURL(file);
     } catch {
-      // Fallback to media URL format if download URL cannot be obtained directly
       const encodedPath = encodeURIComponent(storageKey);
       publicUrl = `https://firebasestorage.googleapis.com/v0/b/${this.bucketName}/o/${encodedPath}?alt=media`;
     }
@@ -71,8 +95,52 @@ export class FirebaseStorageProvider {
   }
 }
 
+export class LocalDiskStorageProvider {
+  constructor({ rootDir, logger }) {
+    if (!rootDir) throw new Error('Local upload directory is required');
+    this.mode = 'local';
+    this.bucketName = 'local-development';
+    this.rootDir = path.resolve(rootDir);
+    this.logger = logger;
+  }
+
+  async upload({ storageKey, buffer }) {
+    const destination = safeLocalPath(this.rootDir, storageKey);
+    await fs.mkdir(path.dirname(destination), { recursive: true });
+    await fs.writeFile(destination, buffer);
+
+    return {
+      storageKey,
+      publicUrl: publicLocalUrl(storageKey),
+      bucket: this.bucketName,
+    };
+  }
+
+  async delete({ storageKey }) {
+    try {
+      const destination = safeLocalPath(this.rootDir, storageKey);
+      await fs.rm(destination, { force: true });
+      return true;
+    } catch (error) {
+      this.logger?.warn?.({ err: error, storageKey }, 'Failed to delete local development asset');
+      return false;
+    }
+  }
+
+  async getAccessUrl({ storageKey }) {
+    try {
+      const destination = safeLocalPath(this.rootDir, storageKey);
+      await fs.access(destination);
+      return publicLocalUrl(storageKey);
+    } catch {
+      return null;
+    }
+  }
+}
+
 export class MemoryStorageProvider {
   constructor() {
+    this.mode = 'memory';
     this.bucketName = 'memory-bucket';
     this.files = new Map();
   }
@@ -118,7 +186,19 @@ export class MemoryStorageProvider {
 }
 
 export function createStorageProvider({ config, adminApp, logger }) {
-  if (config.firebaseStorageBucket && config.firebaseProjectId) {
+  const storageMode = config.storageMode || 'auto';
+
+  if (storageMode === 'local' || (storageMode === 'auto' && !config.isProduction)) {
+    return new LocalDiskStorageProvider({
+      rootDir: config.localUploadDir,
+      logger,
+    });
+  }
+
+  if (storageMode === 'firebase' || config.isProduction) {
+    if (!config.firebaseStorageBucket || !config.firebaseProjectId) {
+      throw new Error('Firebase storage is not configured');
+    }
     const app = adminApp ?? getOrCreateAdminApp(config);
     return new FirebaseStorageProvider({
       bucketName: config.firebaseStorageBucket,
