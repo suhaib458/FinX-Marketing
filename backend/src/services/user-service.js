@@ -18,6 +18,32 @@ function publicUser(user) {
   };
 }
 
+function normalizeEmail(email) {
+  return typeof email === 'string' ? email.trim().toLowerCase() : '';
+}
+
+function isTrustedGoogleEmail(identity) {
+  const email = normalizeEmail(identity?.email);
+  return identity?.provider === 'google.com' && email.endsWith('@gmail.com');
+}
+
+function verifiedIdentity(identity) {
+  const email = normalizeEmail(identity?.email);
+  const trustedEmail = isTrustedGoogleEmail(identity);
+  const normalized = {
+    ...identity,
+    email,
+    emailVerified: Boolean(identity?.emailVerified || trustedEmail),
+    trustedEmail,
+  };
+
+  if (!normalized.email || !normalized.emailVerified) {
+    throw new AppError(403, 'AUTH_EMAIL_NOT_VERIFIED', 'Email verification is required');
+  }
+
+  return normalized;
+}
+
 export class UserService {
   constructor(repository) { this.repository = repository; }
 
@@ -27,22 +53,24 @@ export class UserService {
     return publicUser(user);
   }
 
-  assertVerifiedIdentity(identity) {
-    if (!identity?.email || !identity.emailVerified) {
-      throw new AppError(403, 'AUTH_EMAIL_NOT_VERIFIED', 'Email verification is required');
-    }
-  }
-
   async authenticateFirebaseUser(identity) {
-    this.assertVerifiedIdentity(identity);
-    const user = await this.repository.findActiveByFirebaseUid(identity.uid);
+    const verified = verifiedIdentity(identity);
+    let user = await this.repository.findActiveByFirebaseUid(verified.uid);
+
+    // Identity Platform can keep a Google identity and an email/password identity
+    // as separate Firebase users. For a trusted @gmail.com Google identity, the
+    // verified email is safe to use as the app-level account key.
+    if (!user && verified.trustedEmail) {
+      user = await this.repository.findActiveByEmail(verified.email);
+    }
+
     if (!user) throw new AppError(401, 'SESSION_REQUIRED', 'Application session must be synchronized');
     return publicUser(user);
   }
 
   async provisionFirebaseUser(identity) {
-    this.assertVerifiedIdentity(identity);
-    const user = await this.repository.provisionFirebaseUser(identity);
+    const verified = verifiedIdentity(identity);
+    const user = await this.repository.provisionFirebaseUser(verified);
     if (user?.emailConflict) {
       throw new AppError(409, 'AUTH_EMAIL_CONFLICT', 'This email is already associated with another account');
     }
