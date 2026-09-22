@@ -18,6 +18,7 @@ import { DEFAULT_CUSTOMER_BRAND_COLORS } from '../../constants/brandDefaults';
 import { validateCreateValues } from '../../utils/createValidation';
 import { assetApi } from '../../services/assetApi';
 import { ALLOWED_IMAGE_TYPES, MAX_IMAGE_SIZE } from '../../constants/uploadConfig';
+import { aiErrorMessage } from '../../utils/aiErrorMessage';
 
 const toolMeta = {
   'social-post': { key: 'socialPost', icon: MessageSquare, color: 'var(--tool-social)' },
@@ -351,8 +352,8 @@ function CreateContent() {
       const result = await generateWithCredits(tool, params, brandData, { firebaseUser });
       success(t.common.saved);
       navigate(`/app/result/${result.id}`);
-    } catch {
-      toastError(t.toasts.errorOccurred);
+    } catch (err) {
+      toastError(aiErrorMessage(err, language, t.toasts.errorOccurred));
     } finally {
       submittingRef.current = false;
       setIsGenerating(false);
