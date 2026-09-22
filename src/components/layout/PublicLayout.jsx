@@ -1,5 +1,8 @@
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
-import { Sun, Moon, Globe, Menu, X } from 'lucide-react';
+import {
+  Sun, Moon, Globe, Menu, X, Sparkles, Settings, Tag,
+  BookOpen, UserRound, ArrowRight, ChevronDown
+} from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { useAuth } from '../../context/AuthContext';
@@ -60,86 +63,128 @@ function PublicLayout() {
 
   return (
     <div className="public-layout">
-      <header className={`public-layout__header ${scrolled ? 'public-layout__header--scrolled' : ''}`}>
-        <div className="public-layout__header-container">
+      <header className={`public-layout__header ${isLandingPage ? 'public-layout__header--landing' : ''} ${scrolled ? 'public-layout__header--scrolled' : ''}`}>
+        <div className={`public-layout__header-container ${isLandingPage ? 'landing-nav-shell' : ''}`}>
           <Link to="/" className="brand-logo brand-logo--landing" aria-label={t.common.appName}>
             <span className="brand-logo__wordmark" lang="en">Fin<span>X</span></span>
           </Link>
 
-          {/* Desktop Navigation */}
-          <nav className="public-layout__nav hide-on-mobile">
-            <a href="#features" onClick={(e) => scrollToSection(e, 'features')} className="public-layout__nav-link">
-              {t.nav.features}
-            </a>
-            <a href="#how-it-works" onClick={(e) => scrollToSection(e, 'how-it-works')} className="public-layout__nav-link">
-              {t.nav.howItWorks}
-            </a>
-            <a href="#pricing" onClick={(e) => scrollToSection(e, 'pricing')} className="public-layout__nav-link">
-              {t.nav.pricing}
-            </a>
-            {isLandingPage && (
+          {isLandingPage ? (
+            <>
+              <span className="landing-nav-divider hide-on-mobile" aria-hidden="true" />
+
               <button
                 type="button"
-                className="public-layout__nav-link public-layout__nav-button"
-                onClick={() => info(t.toasts.featureUnavailable)}
+                className="landing-nav-language hide-on-mobile"
+                onClick={toggleLanguage}
+                aria-label={t.language.toggle}
+                title={t.language.toggle}
               >
-                {language === 'ar' ? 'المدونة' : 'Blog'}
+                <Globe size={15} />
+                <span lang="en">{language === 'ar' ? 'EN' : 'AR'}</span>
+                <ChevronDown size={12} />
               </button>
-            )}
-          </nav>
 
-          <div className="header-actions hide-on-mobile">
-            {!isLandingPage && (
-              <Button
-                variant="ghost"
-                isIconOnly
-                size="sm"
-                icon={isDark ? Sun : Moon}
-                onClick={toggleTheme}
-                aria-label={t.theme.toggle}
-                title={t.theme.toggle}
-              />
-            )}
-            <Button
-              variant="ghost"
-              size="sm"
-              icon={Globe}
-              onClick={toggleLanguage}
-              aria-label={t.language.toggle}
-              title={t.language.toggle}
-            >
-              {language === 'ar' ? 'EN' : 'AR'}
-            </Button>
+              <nav className="landing-nav-links hide-on-mobile" aria-label={language === 'ar' ? 'التنقل الرئيسي' : 'Main navigation'}>
+                <button
+                  type="button"
+                  className="landing-nav-link"
+                  onClick={() => info(t.toasts.featureUnavailable)}
+                >
+                  <span>{language === 'ar' ? 'المدونة' : 'Blog'}</span>
+                  <BookOpen size={15} />
+                </button>
 
-            {isAuthenticated ? (
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => navigate('/app')}
-              >
-                {t.nav.dashboard}
-              </Button>
-            ) : (
-              <>
+                <a href="#pricing" onClick={(e) => scrollToSection(e, 'pricing')} className="landing-nav-link">
+                  <span>{t.nav.pricing}</span>
+                  <Tag size={15} />
+                </a>
+
+                <a href="#how-it-works" onClick={(e) => scrollToSection(e, 'how-it-works')} className="landing-nav-link">
+                  <span>{t.nav.howItWorks}</span>
+                  <Settings size={15} />
+                </a>
+
+                <a href="#features" onClick={(e) => scrollToSection(e, 'features')} className="landing-nav-link">
+                  <span>{t.nav.features}</span>
+                  <Sparkles size={15} />
+                </a>
+              </nav>
+
+              <div className="landing-nav-actions hide-on-mobile">
+                {isAuthenticated ? (
+                  <button type="button" className="landing-nav-login" onClick={() => navigate('/app')}>
+                    <span>{t.nav.dashboard}</span>
+                    <UserRound size={16} />
+                  </button>
+                ) : (
+                  <button type="button" className="landing-nav-login" onClick={() => navigate('/login')}>
+                    <span>{t.nav.login}</span>
+                    <UserRound size={16} />
+                  </button>
+                )}
+
+                {!isAuthenticated && (
+                  <button type="button" className="landing-nav-cta" onClick={() => navigate('/register')}>
+                    <span>{language === 'ar' ? 'ابدأ مجانًا' : 'Start free'}</span>
+                    <ArrowRight size={16} />
+                  </button>
+                )}
+              </div>
+            </>
+          ) : (
+            <>
+              <nav className="public-layout__nav hide-on-mobile">
+                <a href="#features" onClick={(e) => scrollToSection(e, 'features')} className="public-layout__nav-link">
+                  {t.nav.features}
+                </a>
+                <a href="#how-it-works" onClick={(e) => scrollToSection(e, 'how-it-works')} className="public-layout__nav-link">
+                  {t.nav.howItWorks}
+                </a>
+                <a href="#pricing" onClick={(e) => scrollToSection(e, 'pricing')} className="public-layout__nav-link">
+                  {t.nav.pricing}
+                </a>
+              </nav>
+
+              <div className="header-actions hide-on-mobile">
+                <Button
+                  variant="ghost"
+                  isIconOnly
+                  size="sm"
+                  icon={isDark ? Sun : Moon}
+                  onClick={toggleTheme}
+                  aria-label={t.theme.toggle}
+                  title={t.theme.toggle}
+                />
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => navigate('/login')}
+                  icon={Globe}
+                  onClick={toggleLanguage}
+                  aria-label={t.language.toggle}
+                  title={t.language.toggle}
                 >
-                  {t.nav.login}
+                  {language === 'ar' ? 'EN' : 'AR'}
                 </Button>
-                <Button
-                  variant="primary"
-                  size="sm"
-                  onClick={() => navigate('/register')}
-                >
-                  {t.nav.register}
-                </Button>
-              </>
-            )}
-          </div>
 
-          {/* Mobile Menu Toggle */}
+                {isAuthenticated ? (
+                  <Button variant="secondary" size="sm" onClick={() => navigate('/app')}>
+                    {t.nav.dashboard}
+                  </Button>
+                ) : (
+                  <>
+                    <Button variant="ghost" size="sm" onClick={() => navigate('/login')}>
+                      {t.nav.login}
+                    </Button>
+                    <Button variant="primary" size="sm" onClick={() => navigate('/register')}>
+                      {t.nav.register}
+                    </Button>
+                  </>
+                )}
+              </div>
+            </>
+          )}
+
           <div className="show-on-mobile">
             <Button
               variant="ghost"
