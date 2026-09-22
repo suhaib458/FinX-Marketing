@@ -20,9 +20,12 @@ export function getOrCreateAdminApp(config) {
 export function mergeFirebaseUserRecord(decodedToken, userRecord) {
   if (!userRecord) return decodedToken;
 
-  const providerIds = Array.isArray(userRecord.providerData)
-    ? userRecord.providerData.map((provider) => provider?.providerId).filter(Boolean)
-    : [];
+  const providerData = Array.isArray(userRecord.providerData) ? userRecord.providerData : [];
+  const providerIds = providerData.map((provider) => provider?.providerId).filter(Boolean);
+  const googleProvider = providerData.find(
+    (provider) => provider?.providerId === 'google.com' && typeof provider?.email === 'string' && provider.email,
+  );
+  const providerEmail = googleProvider?.email || null;
   const existingIdentities = decodedToken.firebase?.identities && typeof decodedToken.firebase.identities === 'object'
     ? decodedToken.firebase.identities
     : {};
@@ -36,8 +39,10 @@ export function mergeFirebaseUserRecord(decodedToken, userRecord) {
     ...decodedToken,
     email: typeof decodedToken.email === 'string' && decodedToken.email
       ? decodedToken.email
-      : userRecord.email || null,
-    email_verified: decodedToken.email_verified === true || userRecord.emailVerified === true,
+      : userRecord.email || providerEmail || null,
+    email_verified: decodedToken.email_verified === true
+      || userRecord.emailVerified === true
+      || Boolean(providerEmail),
     name: typeof decodedToken.name === 'string' && decodedToken.name
       ? decodedToken.name
       : userRecord.displayName || null,
@@ -71,7 +76,23 @@ export function createFirebaseTokenVerifier(config) {
       }
 
       const userRecord = await auth.getUser(uid);
-      return mergeFirebaseUserRecord(decodedToken, userRecord);
+      const enriched = mergeFirebaseUserRecord(decodedToken, userRecord);
+
+      if (process.env.NODE_ENV === 'development' && !enriched.email) {
+        console.warn('[AUTH_DIAGNOSTIC=firebase_user_record_missing_email]', {
+          providerIds: Array.isArray(userRecord.providerData)
+            ? userRecord.providerData.map((provider) => provider?.providerId).filter(Boolean)
+            : [],
+          hasTopLevelEmail: Boolean(userRecord.email),
+          hasGoogleProviderEmail: Boolean(
+            userRecord.providerData?.find(
+              (provider) => provider?.providerId === 'google.com' && provider?.email,
+            ),
+          ),
+        });
+      }
+
+      return enriched;
     },
   };
 }
