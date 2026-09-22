@@ -215,7 +215,6 @@ export class XKiroProvider {
         { role: 'user', content: prompt },
       ],
       response_format: { type: 'json_object' },
-      reasoning_effort: this.reasoningEffort,
       max_tokens: 8192,
       stream: false,
     });
