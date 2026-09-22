@@ -13,6 +13,11 @@ import {
 import { firebaseAuth, firebasePersistenceReady } from './firebaseClient';
 
 const googleProvider = new GoogleAuthProvider();
+// Explicitly request the standard Google identity scopes. This ensures
+// Firebase receives the account email/profile and can propagate the
+// verified-email claim for trusted Google identities.
+googleProvider.addScope('email');
+googleProvider.addScope('profile');
 googleProvider.setCustomParameters({ prompt: 'select_account' });
 
 const SAFE_ERROR_KEYS = {
