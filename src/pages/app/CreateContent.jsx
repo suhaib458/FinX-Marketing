@@ -266,7 +266,23 @@ function CreateContent() {
       setProductImage(uploaded.url);
       setUploadedProductAsset(uploaded);
     } catch (err) {
-      toastError(err.message || t.toasts.errorOccurred);
+      const uploadMessages = language === 'ar'
+        ? {
+            FILE_TOO_LARGE: 'حجم الصورة أكبر من الحد المسموح.',
+            UNSUPPORTED_FILE_TYPE: 'نوع الصورة غير مدعوم. استخدم JPG أو PNG أو WebP.',
+            INVALID_FILE_EXTENSION: 'امتداد الصورة لا يطابق نوع الملف.',
+            CORRUPTED_OR_INVALID_FILE: 'ملف الصورة غير صالح أو تالف.',
+            AI_ERROR: 'تعذر رفع الصورة.',
+            NETWORK_ERROR: 'تعذر الاتصال بخدمة رفع الصور.',
+          }
+        : {
+            FILE_TOO_LARGE: 'The image is larger than the allowed limit.',
+            UNSUPPORTED_FILE_TYPE: 'Unsupported image type. Use JPG, PNG, or WebP.',
+            INVALID_FILE_EXTENSION: 'The image extension does not match the file type.',
+            CORRUPTED_OR_INVALID_FILE: 'The image file is invalid or corrupted.',
+            NETWORK_ERROR: 'Unable to reach the image upload service.',
+          };
+      toastError(uploadMessages[err?.code] || err?.message || t.toasts.errorOccurred);
     } finally {
       setIsUploadingProductImage(false);
       e.target.value = '';
