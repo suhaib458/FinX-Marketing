@@ -31,6 +31,8 @@ const environmentSchema = z.object({
   RATE_LIMIT_MAX: z.coerce.number().int().positive().default(120),
   JSON_BODY_LIMIT: z.string().regex(/^\d+(b|kb|mb)$/i).default('100kb'),
   FIREBASE_STORAGE_BUCKET: z.string().trim().min(1).optional(),
+  STORAGE_MODE: z.enum(['auto', 'local', 'firebase']).default('auto'),
+  LOCAL_UPLOAD_DIR: z.string().trim().min(1).default('.data/uploads'),
   MAX_UPLOAD_SIZE_MB: z.coerce.number().positive().default(25),
   XKIRO_API_KEY: z.string().trim().min(1).optional(),
   XKIRO_BASE_URL: z.string().url().default('https://api.xkiro.com/v1'),
@@ -47,6 +49,9 @@ const environmentSchema = z.object({
   }
   if (env.NODE_ENV === 'production' && !env.FIREBASE_PROJECT_ID) {
     context.addIssue({ code: 'custom', path: ['FIREBASE_PROJECT_ID'], message: 'FIREBASE_PROJECT_ID is required in production' });
+  }
+  if (env.NODE_ENV === 'production' && env.STORAGE_MODE === 'local') {
+    context.addIssue({ code: 'custom', path: ['STORAGE_MODE'], message: 'Local storage cannot be used in production' });
   }
   if (env.NODE_ENV === 'production' && !env.FIREBASE_STORAGE_BUCKET) {
     context.addIssue({ code: 'custom', path: ['FIREBASE_STORAGE_BUCKET'], message: 'FIREBASE_STORAGE_BUCKET is required in production' });
@@ -87,6 +92,8 @@ export function loadConfig(source = process.env) {
     rateLimitMax: parsed.data.RATE_LIMIT_MAX,
     jsonBodyLimit: parsed.data.JSON_BODY_LIMIT,
     firebaseStorageBucket: parsed.data.FIREBASE_STORAGE_BUCKET,
+    storageMode: parsed.data.STORAGE_MODE,
+    localUploadDir: path.resolve(configDir, '../../', parsed.data.LOCAL_UPLOAD_DIR),
     maxUploadSizeMb: parsed.data.MAX_UPLOAD_SIZE_MB,
     maxUploadSizeBytes: Math.round(parsed.data.MAX_UPLOAD_SIZE_MB * 1024 * 1024),
     xkiroApiKey: parsed.data.XKIRO_API_KEY || parsed.data.GEMINI_API_KEY,
