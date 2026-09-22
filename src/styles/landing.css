@@ -3165,3 +3165,22 @@
     animation: none !important;
   }
 }
+
+
+.public-layout__nav-button,
+.public-layout__mobile-link[type='button'] {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+}
+
+.public-layout__nav-button {
+  padding: 0;
+}
+
+.public-layout__mobile-link[type='button'] {
+  width: 100%;
+  text-align: inherit;
+}
