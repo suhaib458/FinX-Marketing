@@ -9,9 +9,13 @@ try {
 }
 
 if (runtime) {
-  const { app, config, database, logger } = runtime;
+  const { app, config, database, logger, aiProvider } = runtime;
   const server = app.listen(config.port, () => {
-    logger.info({ port: config.port }, 'FinX backend listening');
+    logger.info({
+      port: config.port,
+      aiConfigured: Boolean(aiProvider?.configured),
+      aiModel: aiProvider?.model || null,
+    }, 'FinX backend listening');
   });
 
   let shuttingDown = false;
