@@ -61,6 +61,10 @@ export function createMemoryRepositories() {
       async findActiveByFirebaseUid(firebaseUid) {
         return state.users.find((user) => user.firebaseUid === firebaseUid && user.status === 'ACTIVE' && !user.deletedAt) ?? null;
       },
+      async findActiveByEmail(email) {
+        const normalized = String(email || '').trim().toLowerCase();
+        return state.users.find((user) => user.email === normalized && user.status === 'ACTIVE' && !user.deletedAt) ?? null;
+      },
       async provisionFirebaseUser(identity) {
         const email = identity.email.trim().toLowerCase();
         const existing = state.users.find((user) => user.firebaseUid === identity.uid);
@@ -73,7 +77,16 @@ export function createMemoryRepositories() {
           });
           return existing;
         }
-        if (state.users.some((user) => user.email === email)) return { emailConflict: true };
+        const emailOwner = state.users.find((user) => user.email === email);
+        if (emailOwner) {
+          if (!identity.trustedEmail) return { emailConflict: true };
+          Object.assign(emailOwner, {
+            emailVerified: true,
+            name: identity.name || emailOwner.name,
+            photoUrl: identity.picture || emailOwner.photoUrl || null,
+          });
+          return emailOwner;
+        }
         const user = {
           id: `firebase-user-${state.users.length + 1}`,
           firebaseUid: identity.uid,
