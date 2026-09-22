@@ -233,7 +233,7 @@ export class XKiroProvider {
         status: error?.name === 'AbortError' ? 'timeout' : 'unavailable',
         configured: true,
         provider: 'xkiro',
-        model: selected.id,
+        model: this.model,
         code: error?.name === 'AbortError' ? 'AI_TIMEOUT' : (error?.code || 'AI_PROVIDER_ERROR'),
       };
     }
