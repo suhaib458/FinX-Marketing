@@ -5,7 +5,12 @@ async function parseResponse(response) {
   if (response.status === 204) return null;
   const body = await response.json().catch(() => ({}));
   if (!response.ok) {
-    throw new ApiError(response.status, body.error?.code || 'API_ERROR', body.error?.message || 'Request failed');
+    throw new ApiError(
+      response.status,
+      body.error?.code || 'API_ERROR',
+      body.error?.message || 'Request failed',
+      body.error?.details,
+    );
   }
   return body.data;
 }
@@ -41,7 +46,8 @@ export function createAssetApi({ fetchImpl = fetch, timeoutMs = 60_000 } = {}) {
         return await parseResponse(response);
       } catch (error) {
         if (error?.name === 'AbortError') throw new ApiError(408, 'REQUEST_TIMEOUT', 'Request timed out');
-        throw error;
+        if (error instanceof ApiError) throw error;
+        throw new ApiError(0, 'NETWORK_ERROR', 'Unable to reach the upload service');
       } finally {
         clearTimeout(timer);
       }
