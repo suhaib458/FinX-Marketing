@@ -22,6 +22,14 @@ const tokenVerifier = {
       picture: 'https://example.com/google-photo.png',
       firebase: { sign_in_provider: 'google.com' },
     };
+    if (token === 'google-linked-unverified') return {
+      ...verifiedPassword, uid: 'firebase-google-linked-user', sub: 'firebase-google-linked-user',
+      email: 'linked@example.com', email_verified: false,
+      firebase: {
+        sign_in_provider: 'password',
+        identities: { 'google.com': ['linked-google-subject'], email: ['linked@example.com'] },
+      },
+    };
     if (token === 'unverified') return { ...verifiedPassword, email_verified: false };
     if (token === 'conflict') return {
       ...verifiedPassword, uid: 'different-firebase-user', sub: 'different-firebase-user',
@@ -104,6 +112,17 @@ describe('Firebase authentication', () => {
       .set('authorization', 'Bearer google-gmail-unverified');
     expect(me.status).toBe(200);
     expect(me.body.data.email).toBe('trusted-user@gmail.com');
+  });
+
+  it('accepts a linked Google identity even when sign_in_provider is not google.com', async () => {
+    const { app } = buildTestApp({ tokenVerifier });
+    const session = await request(app).post('/api/v1/auth/session')
+      .set('authorization', 'Bearer google-linked-unverified');
+    expect(session.status).toBe(200);
+    expect(session.body.data.user).toMatchObject({
+      email: 'linked@example.com',
+      emailVerified: true,
+    });
   });
 
   it('maps trusted Google Gmail login to an existing app account with the same email', async () => {
