@@ -3,7 +3,7 @@ import { useLanguage } from '../../context/LanguageContext';
 import { useNavigate } from 'react-router-dom';
 import {
   FolderOpen, PlusCircle, MessageSquare, Palette, Lightbulb, Calendar,
-  FolderMinus, Eye, Search, MoreHorizontal, SlidersHorizontal, ArrowUpDown
+  Eye, Search, MoreHorizontal, SlidersHorizontal, ArrowUpDown
 } from 'lucide-react';
 import Button from '../../components/ui/Button';
 import mockGeneration from '../../services/mockGeneration';
