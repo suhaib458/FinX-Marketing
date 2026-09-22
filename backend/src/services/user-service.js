@@ -42,7 +42,7 @@ function verifiedIdentity(identity) {
   if (!normalized.email || !normalized.emailVerified) {
     if (process.env.NODE_ENV === 'development') {
       const domain = normalized.email.includes('@') ? normalized.email.split('@').pop() : null;
-      console.warn('[AUTH_DIAGNOSTIC=unverified_identity]', {
+      console.error('[AUTH_DIAGNOSTIC=unverified_identity]', {
         provider: identity?.provider || null,
         providers: Array.isArray(identity?.providers) ? identity.providers : [],
         hasEmail: Boolean(normalized.email),
