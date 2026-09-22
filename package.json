@@ -32,7 +32,8 @@
     "db:verify-seed": "npm --prefix backend run db:verify-seed",
     "verify:source": "npm run lint && npm run test:run && npm run build && npm run db:validate && npm run db:generate && npm run lint:backend && npm run test:backend:run && npm run backend:openapi",
     "verify:database": "npm run db:check && npm run db:status && npm run test:mysql && npm run smoke:backend && npm run db:verify-seed",
-    "verify": "npm run verify:source && npm run verify:database"
+    "verify": "npm run verify:source && npm run verify:database",
+    "ai:check": "npm --prefix backend run ai:check"
   },
   "dependencies": {
     "firebase": "^12.17.1",
