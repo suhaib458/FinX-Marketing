@@ -26,7 +26,7 @@ export function createApp(options = {}) {
   const database = options.database ?? createDatabase(config);
   const repositories = options.repositories ?? createRepositories(database.prisma);
   const storageProvider = options.storageProvider ?? createStorageProvider({ config, logger });
-  const aiProvider = options.aiProvider ?? createGeminiProvider(config);
+  const aiProvider = options.aiProvider ?? createGeminiProvider(config, logger);
   const services = options.services ?? createServices(repositories, { storageProvider, config, logger, aiProvider });
   const tokenVerifier = options.tokenVerifier ?? createFirebaseTokenVerifier(config);
   const uploadMiddleware = options.uploadMiddleware ?? createUploadMiddleware(config);
@@ -57,10 +57,10 @@ export function createApp(options = {}) {
     },
   }));
 
-  app.use('/api/v1', healthRoutes(createHealthController({ config, database })));
+  app.use('/api/v1', healthRoutes(createHealthController({ config, database, aiProvider })));
   app.use('/api/v1', authRoutes(services.users, firebaseAuth(tokenVerifier)));
   app.use('/api/v1', protectedRoutes(services, combinedAuth({ config, tokenVerifier, userService: services.users }), { uploadMiddleware }));
   app.use(notFoundHandler);
   app.use(errorHandler(logger));
-  return { app, config, database, logger, storageProvider };
+  return { app, config, database, logger, storageProvider, aiProvider };
 }
