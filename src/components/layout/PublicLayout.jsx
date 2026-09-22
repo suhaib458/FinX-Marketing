@@ -61,9 +61,8 @@ function PublicLayout() {
     <div className="public-layout">
       <header className={`public-layout__header ${scrolled ? 'public-layout__header--scrolled' : ''}`}>
         <div className="public-layout__header-container">
-          <Link to="/" className="brand-logo" aria-label={t.common.appName}>
-            <div className="brand-logo__mark" lang="en">FX</div>
-            <span className="brand-logo__text" lang="en">FinX</span>
+          <Link to="/" className="brand-logo brand-logo--landing" aria-label={t.common.appName}>
+            <span className="brand-logo__wordmark" lang="en">Fin<span>X</span></span>
           </Link>
 
           {/* Desktop Navigation */}
