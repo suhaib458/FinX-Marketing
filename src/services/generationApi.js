@@ -11,10 +11,10 @@ export function createGenerationApi() {
           tool,
           params,
           brandId: brand?.id || null,
-          brand,
+          brand: brand || {},
           idempotencyKey: crypto.randomUUID(),
         },
-        timeoutMs: 60_000,
+        timeoutMs: 75_000,
       });
       return payload.data;
     } catch (error) {
