@@ -16,6 +16,7 @@ import mockGeneration from '../../services/mockGeneration';
 import mockCredits from '../../services/mockCredits';
 import { generateVariationWithCredits } from '../../services/mockGenerationFlow';
 import contentApi from '../../services/contentApi';
+import { aiErrorMessage } from '../../utils/aiErrorMessage';
 
 const typeIcons = {
   'social-post': MessageSquare,
@@ -173,8 +174,8 @@ function ContentResult() {
       }, { firebaseUser });
       success(t.toasts.variationSuccess);
       navigate(`/app/result/${variation.id}`);
-    } catch {
-      toastError(t.toasts.errorOccurred || 'An error occurred');
+    } catch (err) {
+      toastError(aiErrorMessage(err, language, t.toasts.errorOccurred || 'An error occurred'));
     } finally {
       variationRequestRef.current = false;
       setIsGenerating(false);
