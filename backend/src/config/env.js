@@ -34,7 +34,8 @@ const environmentSchema = z.object({
   MAX_UPLOAD_SIZE_MB: z.coerce.number().positive().default(25),
   GEMINI_API_KEY: z.string().trim().min(1).optional(),
   GEMINI_MODEL: z.string().trim().min(1).default('gemini-3.8-flash'),
-  AI_REQUEST_TIMEOUT_MS: z.coerce.number().int().positive().default(45000),
+  GEMINI_THINKING_LEVEL: z.enum(['low', 'medium', 'high']).default('low'),
+  AI_REQUEST_TIMEOUT_MS: z.coerce.number().int().positive().max(180000).default(60000),
 }).superRefine((env, context) => {
   if (env.NODE_ENV === 'production' && !env.DATABASE_URL) {
     context.addIssue({ code: 'custom', path: ['DATABASE_URL'], message: 'DATABASE_URL is required in production' });
@@ -44,6 +45,9 @@ const environmentSchema = z.object({
   }
   if (env.NODE_ENV === 'production' && !env.FIREBASE_STORAGE_BUCKET) {
     context.addIssue({ code: 'custom', path: ['FIREBASE_STORAGE_BUCKET'], message: 'FIREBASE_STORAGE_BUCKET is required in production' });
+  }
+  if (env.NODE_ENV === 'production' && !env.GEMINI_API_KEY) {
+    context.addIssue({ code: 'custom', path: ['GEMINI_API_KEY'], message: 'GEMINI_API_KEY is required in production' });
   }
   if (env.NODE_ENV === 'production' && env.ALLOW_DEV_AUTH) {
     context.addIssue({ code: 'custom', path: ['ALLOW_DEV_AUTH'], message: 'Development authentication cannot be enabled in production' });
@@ -82,6 +86,7 @@ export function loadConfig(source = process.env) {
     maxUploadSizeBytes: Math.round(parsed.data.MAX_UPLOAD_SIZE_MB * 1024 * 1024),
     geminiApiKey: parsed.data.GEMINI_API_KEY,
     geminiModel: parsed.data.GEMINI_MODEL,
+    geminiThinkingLevel: parsed.data.GEMINI_THINKING_LEVEL,
     aiRequestTimeoutMs: parsed.data.AI_REQUEST_TIMEOUT_MS,
   };
 }
