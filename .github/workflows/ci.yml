@@ -1,0 +1,57 @@
+name: FinX CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  source-verification:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            backend/package-lock.json
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Install backend dependencies
+        run: npm --prefix backend ci
+
+      - name: Frontend lint
+        run: npm run lint
+
+      - name: Frontend tests
+        run: npm run test:run
+
+      - name: Frontend build
+        run: npm run build
+
+      - name: Prisma validate and generate
+        run: |
+          npm run db:validate
+          npm run db:generate
+
+      - name: Backend lint
+        run: npm run lint:backend
+
+      - name: Backend tests
+        run: npm run test:backend:run
+
+      - name: Validate OpenAPI
+        run: npm run backend:openapi
