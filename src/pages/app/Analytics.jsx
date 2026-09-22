@@ -1,53 +1,123 @@
 import { useLanguage } from '../../context/LanguageContext';
-import { BarChart3, Upload, TrendingUp, Image, Sparkles } from 'lucide-react';
+import {
+  BarChart3, TrendingUp, Heart, MessageCircle, Send, Eye,
+  Sparkles, ArrowUpRight
+} from 'lucide-react';
+
+const BAR_VALUES = [58, 76, 64, 84, 48, 69, 55];
 
 function Analytics() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+
+  const copy = language === 'ar'
+    ? {
+        preview: 'معاينة احترافية',
+        performance: 'أداء المحتوى',
+        period7: '7 أيام',
+        period30: '30 يوم',
+        period90: '90 يوم',
+        compared: 'مقارنة بالفترة السابقة',
+        interactions: 'تفاعلات',
+        reach: 'وصول',
+        shares: 'مشاركات',
+        comments: 'تعليقات',
+        days: ['السبت', 'الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة'],
+        insightTitle: 'أفضل أداء هذا الأسبوع',
+        insightBody: 'المحتوى البصري المختصر حقق أعلى تفاعل في المعاينة.',
+      }
+    : {
+        preview: 'Premium preview',
+        performance: 'Content performance',
+        period7: '7 days',
+        period30: '30 days',
+        period90: '90 days',
+        compared: 'vs previous period',
+        interactions: 'Interactions',
+        reach: 'Reach',
+        shares: 'Shares',
+        comments: 'Comments',
+        days: ['Sat', 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri'],
+        insightTitle: 'Best performance this week',
+        insightBody: 'Short visual content reached the strongest engagement in this preview.',
+      };
+
+  const metrics = [
+    { icon: Heart, value: '1.8K', label: copy.interactions, tone: 'rose' },
+    { icon: BarChart3, value: '320', label: copy.reach, tone: 'blue' },
+    { icon: Send, value: '12', label: copy.shares, tone: 'violet' },
+    { icon: MessageCircle, value: '48', label: copy.comments, tone: 'amber' },
+  ];
 
   return (
-    <div className="page-enter analytics-page">
-      <div className="analytics-header">
+    <div className="page-enter analytics-page analytics-page--premium">
+      <div className="analytics-header analytics-header--premium">
         <div>
-        <h1 className="analytics-title">
-          {t.analytics.title}
-        </h1>
-        <p className="analytics-subtitle">
-          {t.analytics.subtitle}
-        </p>
+          <h1 className="analytics-title">{t.analytics.title}</h1>
+          <p className="analytics-subtitle">{t.analytics.subtitle}</p>
         </div>
-        <span className="analytics-coming-badge"><Sparkles size={15} /> {t.common.comingSoon}</span>
+        <span className="analytics-coming-badge">
+          <Sparkles size={14} />
+          {copy.preview}
+        </span>
       </div>
 
-      <div className="analytics-layout">
-        <section className="fx-card fx-card--empty analytics-upload-panel">
-          <div className="analytics-upload-icon"><Upload size={32} /></div>
-          <h2>{t.analytics.uploadScreenshot}</h2>
-          <p>{t.analytics.uploadHint}</p>
-          <button className="fx-btn fx-btn--secondary" disabled>
-            <Upload size={18} /> {t.common.comingSoon}
-          </button>
-        </section>
+      <section className="analytics-performance fx-card">
+        <div className="analytics-performance__top">
+          <div>
+            <span className="analytics-performance__eyebrow">{copy.performance}</span>
+            <div className="analytics-trend-row">
+              <strong>+24%</strong>
+              <span><TrendingUp size={14} /> {copy.compared}</span>
+            </div>
+          </div>
 
-        <section className="fx-card fx-card--result analytics-preview" aria-label="Sample analytics preview">
-          <div className="analytics-preview__header">
-            <div><BarChart3 size={20} /><strong lang="en">Analytics Preview</strong></div>
-            <span>{t.common.comingSoon}</span>
+          <div className="analytics-periods" aria-label={copy.performance}>
+            <button type="button" className="analytics-period analytics-period--active">{copy.period7}</button>
+            <button type="button" className="analytics-period">{copy.period30}</button>
+            <button type="button" className="analytics-period">{copy.period90}</button>
           </div>
-          <div className="analytics-metric">
-            <span><TrendingUp size={18} /> <span lang="en">Engagement</span></span>
-            <strong lang="en">+24%</strong>
+        </div>
+
+        <div className="analytics-chart-shell">
+          <div className="analytics-chart-grid" aria-hidden="true">
+            <span />
+            <span />
+            <span />
+            <span />
           </div>
-          <div className="analytics-bars" aria-hidden="true">
-            {[38, 62, 48, 82, 68, 92, 76].map((height, index) => (
-              <i key={index} style={{ '--bar-height': `${height}%` }} />
+          <div className="analytics-premium-bars" aria-label="Analytics preview">
+            {BAR_VALUES.map((height, index) => (
+              <div className="analytics-premium-bar-wrap" key={copy.days[index]}>
+                <div className="analytics-premium-bar-track">
+                  <i style={{ '--bar-height': `${height}%`, '--bar-delay': `${index * 45}ms` }} />
+                </div>
+                <span>{copy.days[index]}</span>
+              </div>
             ))}
           </div>
-          <div className="analytics-best-post">
-            <div className="analytics-best-post__visual"><Image size={24} /></div>
-            <div><span lang="en">Best-performing post</span><strong lang="en">1.8K interactions</strong></div>
-          </div>
-        </section>
-      </div>
+        </div>
+
+        <div className="analytics-kpi-grid">
+          {metrics.map(({ icon: Icon, value, label, tone }) => (
+            <div className={`analytics-kpi analytics-kpi--${tone}`} key={label}>
+              <div className="analytics-kpi__icon"><Icon size={18} /></div>
+              <div>
+                <strong lang="en">{value}</strong>
+                <span>{label}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="analytics-insight fx-card fx-card--quiet">
+        <div className="analytics-insight__icon"><Eye size={18} /></div>
+        <div className="analytics-insight__copy">
+          <strong>{copy.insightTitle}</strong>
+          <span>{copy.insightBody}</span>
+        </div>
+        <ArrowUpRight size={18} className="analytics-insight__arrow" />
+      </section>
     </div>
   );
 }
