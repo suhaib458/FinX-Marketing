@@ -1,6 +1,7 @@
 import request from 'supertest';
 import { describe, expect, it } from 'vitest';
 import { buildTestApp, createMemoryRepositories } from './helpers/test-app.js';
+import { mergeFirebaseUserRecord } from '../src/infrastructure/firebase-admin.js';
 
 const verifiedPassword = {
   uid: 'firebase-password-user', sub: 'firebase-password-user',
@@ -223,5 +224,54 @@ describe('Firebase authentication', () => {
     const ledger = repositories.state.ledger.filter((l) => l.userId === first.body.data.user.id);
     expect(ledger).toHaveLength(1);
     expect(ledger[0].type).toBe('INITIAL_GRANT');
+  });
+});
+
+
+describe('Firebase Admin identity enrichment', () => {
+  it('hydrates missing email and provider identities from the Firebase user record', () => {
+    const decoded = {
+      uid: 'firebase-google-user',
+      sub: 'firebase-google-user',
+      email_verified: false,
+      firebase: { sign_in_provider: 'google.com' },
+    };
+    const userRecord = {
+      email: 'trusted-user@gmail.com',
+      emailVerified: false,
+      displayName: 'Trusted User',
+      photoURL: 'https://example.com/avatar.png',
+      providerData: [{ providerId: 'google.com' }],
+    };
+
+    const enriched = mergeFirebaseUserRecord(decoded, userRecord);
+
+    expect(enriched.email).toBe('trusted-user@gmail.com');
+    expect(enriched.email_verified).toBe(false);
+    expect(enriched.name).toBe('Trusted User');
+    expect(enriched.picture).toBe('https://example.com/avatar.png');
+    expect(Object.keys(enriched.firebase.identities)).toContain('google.com');
+  });
+
+  it('never overwrites verified token identity fields with weaker user-record values', () => {
+    const decoded = {
+      uid: 'firebase-user',
+      email: 'token@example.com',
+      email_verified: true,
+      name: 'Token Name',
+      firebase: { sign_in_provider: 'password' },
+    };
+    const userRecord = {
+      email: 'record@example.com',
+      emailVerified: false,
+      displayName: 'Record Name',
+      providerData: [],
+    };
+
+    const enriched = mergeFirebaseUserRecord(decoded, userRecord);
+
+    expect(enriched.email).toBe('token@example.com');
+    expect(enriched.email_verified).toBe(true);
+    expect(enriched.name).toBe('Token Name');
   });
 });
