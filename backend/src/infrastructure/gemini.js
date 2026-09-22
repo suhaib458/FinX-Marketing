@@ -15,8 +15,8 @@ function extractText(payload) {
 function parseJsonText(text) {
   if (!text) throw new AppError(502, 'AI_EMPTY_RESPONSE', 'AI provider returned an empty response');
   const normalized = text
-    .replace(/^\`\`\`(?:json)?\s*/i, '')
-    .replace(/\s*\`\`\`$/i, '')
+    .replace(/^```(?:json)?\s*/i, '')
+    .replace(/\s*```$/i, '')
     .trim();
   try {
     return JSON.parse(normalized);
