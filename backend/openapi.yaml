@@ -46,22 +46,22 @@ paths:
   /health/ai:
     get:
       tags: [System]
-      summary: Safe Gemini configuration and connectivity probe
+      summary: Safe xKiro configuration and connectivity probe
       responses:
         '200':
-          description: Gemini is configured and reachable
+          description: xKiro is configured and reachable
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/AIHealth'
         '502':
-          description: Gemini is configured but unavailable
+          description: xKiro is configured but unavailable
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/AIHealth'
         '503':
-          description: Gemini is not configured
+          description: xKiro is not configured
           content:
             application/json:
               schema:
@@ -462,9 +462,9 @@ components:
       type: object
       required: [status, configured, provider, model]
       properties:
-        status: { type: string, enum: [ready, not_configured, invalid_key, unavailable, timeout] }
+        status: { type: string, enum: [ready, not_configured, invalid_key, model_not_found, unavailable, timeout] }
         configured: { type: boolean }
-        provider: { type: string, const: gemini }
+        provider: { type: string, const: xkiro }
         model: { type: [string, 'null'] }
         displayName: { type: [string, 'null'] }
         code: { type: string }
@@ -628,7 +628,7 @@ components:
         content: { type: object }
         createdAt: { type: string, format: date-time }
         businessName: { type: string }
-        source: { type: string, const: gemini }
+        source: { type: string, const: xkiro }
     GenerationTool:
       type: string
       enum: [SOCIAL_POST, AD_DESIGN, CONTENT_IDEAS, CAMPAIGN]
