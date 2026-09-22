@@ -24,6 +24,18 @@ export class UserRepository {
     });
   }
 
+  findActiveByEmail(email) {
+    return this.prisma.user.findFirst({
+      where: { email: email.trim().toLowerCase(), status: 'ACTIVE', deletedAt: null },
+      select: {
+        id: true, firebaseUid: true, email: true, emailVerified: true, name: true,
+        photoUrl: true, role: true, status: true, planCode: true,
+        onboardingCompleted: true, locale: true, timezone: true, createdAt: true,
+        wallet: { select: { balance: true } },
+      },
+    });
+  }
+
   async provisionFirebaseUser(identity) {
     const userId = crypto.randomUUID();
     const walletId = crypto.randomUUID();
@@ -80,8 +92,24 @@ export class UserRepository {
           return updated;
         }
 
-        const emailOwner = await transaction.user.findUnique({ where: { email } });
-        if (emailOwner) return { emailConflict: true };
+        const emailOwner = await transaction.user.findUnique({
+          where: { email },
+          include: { wallet: { select: { balance: true } } },
+        });
+        if (emailOwner) {
+          if (!identity.trustedEmail) return { emailConflict: true };
+
+          return transaction.user.update({
+            where: { id: emailOwner.id },
+            data: {
+              emailVerified: true,
+              name: identity.name ? name : emailOwner.name,
+              photoUrl: identity.picture?.slice(0, 2048) || emailOwner.photoUrl,
+              lastLoginAt: new Date(),
+            },
+            include: { wallet: { select: { balance: true } } },
+          });
+        }
 
         try {
           await transaction.user.create({
