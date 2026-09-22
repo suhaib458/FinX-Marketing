@@ -25,7 +25,8 @@
     "db:seed": "prisma db seed",
     "audit": "npm audit",
     "ai:check": "node scripts/check-ai.js",
-    "ai:models": "node scripts/list-ai-models.js"
+    "ai:models": "node scripts/list-ai-models.js",
+    "storage:check": "node scripts/check-storage.js"
   },
   "dependencies": {
     "@prisma/adapter-mariadb": "^7.0.0",
