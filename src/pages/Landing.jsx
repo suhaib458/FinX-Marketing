@@ -22,12 +22,7 @@ import {
   Instagram,
   Youtube,
   Linkedin,
-  ChevronRight,
-  ChevronLeft,
-  Zap,
   ShieldCheck,
-  Heart,
-  Send,
   Globe2,
   Layers3,
 } from 'lucide-react';
@@ -178,7 +173,6 @@ function Landing() {
   const { info } = useToast();
   const isArabic = language === 'ar';
   const ArrowIcon = isArabic ? ArrowLeft : ArrowRight;
-  const ChevronIcon = isArabic ? ChevronLeft : ChevronRight;
 
   const copy = isArabic
     ? {
