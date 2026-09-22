@@ -241,13 +241,13 @@ describe('Firebase Admin identity enrichment', () => {
       emailVerified: false,
       displayName: 'Trusted User',
       photoURL: 'https://example.com/avatar.png',
-      providerData: [{ providerId: 'google.com' }],
+      providerData: [{ providerId: 'google.com', email: 'trusted-user@gmail.com' }],
     };
 
     const enriched = mergeFirebaseUserRecord(decoded, userRecord);
 
     expect(enriched.email).toBe('trusted-user@gmail.com');
-    expect(enriched.email_verified).toBe(false);
+    expect(enriched.email_verified).toBe(true);
     expect(enriched.name).toBe('Trusted User');
     expect(enriched.picture).toBe('https://example.com/avatar.png');
     expect(Object.keys(enriched.firebase.identities)).toContain('google.com');
