@@ -13,9 +13,10 @@ function PublicLayout() {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const { clearToasts } = useToast();
+  const { clearToasts, info } = useToast();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const isLandingPage = location.pathname === '/';
 
   // Clear toasts on route change
   useEffect(() => {
@@ -76,18 +77,29 @@ function PublicLayout() {
             <a href="#pricing" onClick={(e) => scrollToSection(e, 'pricing')} className="public-layout__nav-link">
               {t.nav.pricing}
             </a>
+            {isLandingPage && (
+              <button
+                type="button"
+                className="public-layout__nav-link public-layout__nav-button"
+                onClick={() => info(t.toasts.featureUnavailable)}
+              >
+                {language === 'ar' ? 'المدونة' : 'Blog'}
+              </button>
+            )}
           </nav>
 
           <div className="header-actions hide-on-mobile">
-            <Button
-              variant="ghost"
-              isIconOnly
-              size="sm"
-              icon={isDark ? Sun : Moon}
-              onClick={toggleTheme}
-              aria-label={t.theme.toggle}
-              title={t.theme.toggle}
-            />
+            {!isLandingPage && (
+              <Button
+                variant="ghost"
+                isIconOnly
+                size="sm"
+                icon={isDark ? Sun : Moon}
+                onClick={toggleTheme}
+                aria-label={t.theme.toggle}
+                title={t.theme.toggle}
+              />
+            )}
             <Button
               variant="ghost"
               size="sm"
@@ -153,12 +165,26 @@ function PublicLayout() {
             <a href="#pricing" onClick={(e) => scrollToSection(e, 'pricing')} className="public-layout__mobile-link">
               {t.nav.pricing}
             </a>
+            {isLandingPage && (
+              <button
+                type="button"
+                className="public-layout__mobile-link"
+                onClick={() => {
+                  info(t.toasts.featureUnavailable);
+                  setMobileMenuOpen(false);
+                }}
+              >
+                {language === 'ar' ? 'المدونة' : 'Blog'}
+              </button>
+            )}
           </nav>
           <div className="public-layout__mobile-actions">
             <div style={{ display: 'flex', gap: 'var(--space-2)', marginBottom: 'var(--space-4)' }}>
-              <Button variant="secondary" fullWidth icon={isDark ? Sun : Moon} onClick={toggleTheme}>
-                {t.theme.toggle}
-              </Button>
+              {!isLandingPage && (
+                <Button variant="secondary" fullWidth icon={isDark ? Sun : Moon} onClick={toggleTheme}>
+                  {t.theme.toggle}
+                </Button>
+              )}
               <Button variant="secondary" fullWidth icon={Globe} onClick={toggleLanguage}>
                 {language === 'ar' ? 'English' : 'العربية'}
               </Button>
