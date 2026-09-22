@@ -22,7 +22,7 @@ export function createHealthController({ config, database, aiProvider }) {
       res.json({
         version: config.version,
         environment: config.nodeEnv,
-        aiModel: config.geminiModel || null,
+        aiModel: config.xkiroModel || null,
       });
     },
   };
