@@ -14,7 +14,8 @@ Add these values to `backend/.env`:
 XKIRO_API_KEY=sk-xt-your-key
 XKIRO_BASE_URL=https://api.xkiro.com/v1
 XKIRO_MODEL=google/gemini-3.7-flash
-AI_REASONING_EFFORT=low
+XKIRO_FALLBACK_MODEL=qwen/qwen3.8-max:free
+AI_REASONING_EFFORT=none
 AI_REQUEST_TIMEOUT_MS=75000
 ```
 
@@ -52,7 +53,9 @@ GET /api/v1/health/ai
 ## Runtime behavior
 
 - Provider: xKiro.
-- Default model: `google/gemini-3.7-flash`.
+- Preferred model: `google/gemini-3.7-flash`.
+- Free-account fallback: `qwen/qwen3.8-max:free`.
+- FinX checks xKiro usage + the live model catalog and automatically selects the free fallback when the preferred paid model is not available to the account.
 - Protocol: OpenAI-compatible `POST /v1/chat/completions`.
 - JSON mode is requested with `response_format: { "type": "json_object" }`.
 - FinX still validates every generated object with Zod before persistence.
