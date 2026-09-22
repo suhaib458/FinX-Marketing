@@ -56,6 +56,22 @@
   background-clip: text;
 }
 
+.brand-logo--landing {
+  text-decoration: none;
+}
+
+.brand-logo__wordmark {
+  color: #f8edf4;
+  font-family: var(--font-english);
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: -.045em;
+}
+
+.brand-logo__wordmark > span {
+  color: #ec67ad;
+}
+
 .public-layout__nav {
   gap: 26px;
 }
