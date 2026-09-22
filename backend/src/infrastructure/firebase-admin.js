@@ -79,7 +79,7 @@ export function createFirebaseTokenVerifier(config) {
       const enriched = mergeFirebaseUserRecord(decodedToken, userRecord);
 
       if (process.env.NODE_ENV === 'development' && !enriched.email) {
-        console.warn('[AUTH_DIAGNOSTIC=firebase_user_record_missing_email]', {
+        console.error('[AUTH_DIAGNOSTIC=firebase_user_record_missing_email]', {
           providerIds: Array.isArray(userRecord.providerData)
             ? userRecord.providerData.map((provider) => provider?.providerId).filter(Boolean)
             : [],
