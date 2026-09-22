@@ -1,7 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import { useNavigate } from 'react-router-dom';
-import { FolderOpen, PlusCircle, MessageSquare, Palette, Lightbulb, Calendar, FolderMinus, Eye } from 'lucide-react';
+import {
+  FolderOpen, PlusCircle, MessageSquare, Palette, Lightbulb, Calendar,
+  FolderMinus, Eye, Search, MoreHorizontal, SlidersHorizontal, ArrowUpDown
+} from 'lucide-react';
 import Button from '../../components/ui/Button';
 import mockGeneration from '../../services/mockGeneration';
 import { useToast } from '../../context/ToastContext';
@@ -22,12 +25,54 @@ const typeToolKeys = {
   'campaign': 'campaign',
 };
 
-const typeColors = {
-  'social-post': 'var(--tool-social)',
-  'ad-design': 'var(--tool-ad)',
-  'content-ideas': 'var(--tool-ideas)',
-  'campaign': 'var(--tool-campaign)',
-};
+function itemType(item) {
+  return item?.type || item?.tool?.toLowerCase?.().replaceAll('_', '-') || 'social-post';
+}
+
+function itemPreview(item) {
+  const type = itemType(item);
+  if (type === 'social-post') return item.content?.headline || item.content?.caption || '';
+  if (type === 'ad-design') return item.content?.headline || item.content?.offer || '';
+  if (type === 'campaign') return item.content?.days?.[0]?.idea || item.content?.objective || '';
+  return item.content?.ideas?.[0]?.title || '';
+}
+
+function LibraryVisual({ item }) {
+  const type = itemType(item);
+  const Icon = typeIcons[type] || MessageSquare;
+  const productImage = item.content?.productImage;
+  const headline = itemPreview(item);
+
+  if (productImage) {
+    return (
+      <div className="library-visual library-visual--image">
+        <img src={productImage} alt="" />
+        <div className="library-visual__scrim" />
+        <div className="library-visual__badge"><Icon size={14} /></div>
+        <strong>{headline}</strong>
+      </div>
+    );
+  }
+
+  return (
+    <div className={`library-visual library-visual--${type}`}>
+      <div className="library-visual__orb library-visual__orb--one" />
+      <div className="library-visual__orb library-visual__orb--two" />
+      <div className="library-visual__center">
+        <Icon size={type === 'content-ideas' ? 34 : 28} />
+      </div>
+      {type === 'social-post' && (
+        <div className="library-visual__lines" aria-hidden="true"><i /><i /><i /></div>
+      )}
+      {type === 'campaign' && (
+        <div className="library-visual__campaign-bars" aria-hidden="true">
+          {[36, 72, 52, 88, 62].map((height, index) => <i key={index} style={{ height: `${height}%` }} />)}
+        </div>
+      )}
+      {headline && <strong>{headline}</strong>}
+    </div>
+  );
+}
 
 function Library() {
   const { t, language } = useLanguage();
@@ -36,6 +81,26 @@ function Library() {
   const { firebaseUser } = useAuth();
   const [savedItems, setSavedItems] = useState([]);
   const [filterTool, setFilterTool] = useState('all');
+  const [search, setSearch] = useState('');
+  const [sortOrder, setSortOrder] = useState('newest');
+
+  const copy = language === 'ar'
+    ? {
+        search: 'ابحث في مكتبتك...',
+        newest: 'الأحدث',
+        oldest: 'الأقدم',
+        filters: 'تصفية',
+        open: 'فتح',
+        generated: 'محتوى محفوظ',
+      }
+    : {
+        search: 'Search your library...',
+        newest: 'Newest',
+        oldest: 'Oldest',
+        filters: 'Filter',
+        open: 'Open',
+        generated: 'Saved content',
+      };
 
   useEffect(() => {
     let cancelled = false;
@@ -55,37 +120,57 @@ function Library() {
     try {
       await contentApi.setSaved(firebaseUser, id, false);
       mockGeneration.updateResult(id, { saved: false, savedAt: null });
-      setSavedItems(prev => prev.filter(item => item.id !== id));
+      setSavedItems((previous) => previous.filter((item) => item.id !== id));
       success(t.toasts.removedFromLibrary);
     } catch (err) {
       toastError(err.message || t.toasts.errorOccurred);
     }
   };
 
-  const filtered = filterTool === 'all'
-    ? savedItems
-    : savedItems.filter(item => item.type === filterTool);
+  const visibleItems = useMemo(() => {
+    const normalizedSearch = search.trim().toLocaleLowerCase(language === 'ar' ? 'ar' : 'en');
+    const filtered = savedItems.filter((item) => {
+      const type = itemType(item);
+      if (filterTool !== 'all' && type !== filterTool) return false;
+      if (!normalizedSearch) return true;
+
+      const haystack = [
+        itemPreview(item),
+        item.businessName,
+        item.platform,
+        t.tools[typeToolKeys[type]]?.title,
+      ].filter(Boolean).join(' ').toLocaleLowerCase(language === 'ar' ? 'ar' : 'en');
+      return haystack.includes(normalizedSearch);
+    });
+
+    return [...filtered].sort((a, b) => {
+      const aTime = new Date(a.savedAt || a.createdAt || 0).getTime();
+      const bTime = new Date(b.savedAt || b.createdAt || 0).getTime();
+      return sortOrder === 'newest' ? bTime - aTime : aTime - bTime;
+    });
+  }, [savedItems, filterTool, search, sortOrder, language, t.tools]);
 
   const isEmpty = savedItems.length === 0;
 
   return (
-    <div className="page-enter library-page">
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        marginBottom: 'var(--space-6)',
-        flexWrap: 'wrap',
-        gap: 'var(--space-3)',
-      }}>
+    <div className="page-enter library-page library-page--premium">
+      <div className="library-premium-header">
         <div>
-          <h1 className="library-title">
-            {t.library.title}
-          </h1>
-          <p className="library-subtitle">
-            {t.library.subtitle}
-          </p>
+          <h1 className="library-title">{t.library.title}</h1>
+          <p className="library-subtitle">{t.library.subtitle}</p>
         </div>
+
+        {!isEmpty && (
+          <div className="library-search-shell">
+            <Search size={17} />
+            <input
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder={copy.search}
+              aria-label={copy.search}
+            />
+          </div>
+        )}
       </div>
 
       {isEmpty ? (
@@ -105,108 +190,118 @@ function Library() {
           >
             {t.library.emptyAction}
           </Button>
-          <div className="library-empty__hints">
-            <span><MessageSquare size={16} /> {t.tools.socialPost?.title}</span>
-            <span><Palette size={16} /> {t.tools.adDesign?.title}</span>
-            <span><Calendar size={16} /> {t.tools.campaign?.title}</span>
-          </div>
-          <small>{t.library.subtitle}</small>
         </div>
       ) : (
         <>
-          {/* Filter chips */}
-          <div className="chip-group" style={{ marginBottom: 'var(--space-5)' }}>
-            <button
-              className={`chip ${filterTool === 'all' ? 'chip--active' : ''}`}
-              onClick={() => setFilterTool('all')}
-            >
-              {t.common.all} ({savedItems.length})
-            </button>
-            {Object.entries(typeToolKeys).map(([slug, key]) => {
-              const count = savedItems.filter(i => i.type === slug).length;
-              if (count === 0) return null;
-              return (
-                <button
-                  key={slug}
-                  className={`chip ${filterTool === slug ? 'chip--active' : ''}`}
-                  onClick={() => setFilterTool(slug)}
-                >
-                  {t.tools[key]?.title} ({count})
-                </button>
-              );
-            })}
+          <div className="library-toolbar">
+            <div className="library-filter-chips">
+              <button
+                className={`library-filter-chip ${filterTool === 'all' ? 'library-filter-chip--active' : ''}`}
+                onClick={() => setFilterTool('all')}
+              >
+                <SlidersHorizontal size={14} />
+                {t.common.all} <span>{savedItems.length}</span>
+              </button>
+              {Object.entries(typeToolKeys).map(([slug, key]) => {
+                const count = savedItems.filter((item) => itemType(item) === slug).length;
+                if (count === 0) return null;
+                return (
+                  <button
+                    key={slug}
+                    className={`library-filter-chip ${filterTool === slug ? 'library-filter-chip--active' : ''}`}
+                    onClick={() => setFilterTool(slug)}
+                  >
+                    {t.tools[key]?.title} <span>{count}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <label className="library-sort">
+              <ArrowUpDown size={14} />
+              <select value={sortOrder} onChange={(event) => setSortOrder(event.target.value)}>
+                <option value="newest">{copy.newest}</option>
+                <option value="oldest">{copy.oldest}</option>
+              </select>
+            </label>
           </div>
 
-          {/* Items grid */}
-          <div className="library-grid">
-            {filtered.map(item => {
-              const Icon = typeIcons[item.type] || MessageSquare;
-              const color = typeColors[item.type] || 'var(--color-accent)';
-              const toolKey = typeToolKeys[item.type];
-              const preview = item.type === 'social-post'
-                ? item.content?.headline || item.content?.caption?.slice(0, 80) || ''
-                : item.type === 'ad-design'
-                  ? item.content?.headline || ''
-                  : item.type === 'campaign'
-                    ? item.content?.objective || ''
-                    : item.content?.ideas?.[0]?.title || '';
+          {visibleItems.length > 0 ? (
+            <div className="library-grid library-grid--premium">
+              {visibleItems.map((item) => {
+                const type = itemType(item);
+                const toolKey = typeToolKeys[type] || 'socialPost';
+                const preview = itemPreview(item);
+                const date = new Date(item.savedAt || item.createdAt);
 
-              return (
-                <div
-                  key={item.id}
-                  className="fx-card fx-card--interactive library-card"
-                  role="link"
-                  tabIndex="0"
-                  onClick={() => navigate(`/app/result/${item.id}`)}
-                  onKeyDown={(event) => {
-                    if (event.key === 'Enter' || event.key === ' ') {
-                      event.preventDefault();
-                      navigate(`/app/result/${item.id}`);
-                    }
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: 'var(--space-3)', marginBottom: 'var(--space-3)' }}>
-                    <div style={{
-                      width: 36, height: 36, borderRadius: 'var(--radius-md)',
-                      background: `color-mix(in srgb, ${color} 14%, transparent)`, display: 'flex',
-                      alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-                    }}>
-                      <Icon size={18} style={{ color }} />
-                    </div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontWeight: 'var(--font-semibold)', fontSize: 'var(--text-sm)' }}>
-                        {t.tools[toolKey]?.title}
+                return (
+                  <article
+                    key={item.id}
+                    className="library-card library-card--premium"
+                    role="link"
+                    tabIndex="0"
+                    onClick={() => navigate(`/app/result/${item.id}`)}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        navigate(`/app/result/${item.id}`);
+                      }
+                    }}
+                  >
+                    <LibraryVisual item={item} />
+
+                    <div className="library-card__content">
+                      <div className="library-card__topline">
+                        <div>
+                          <strong>{t.tools[toolKey]?.title}</strong>
+                          <span>
+                            <span lang="en">{t.platforms[item.platform] || item.platform || copy.generated}</span>
+                            {' · '}
+                            {Number.isNaN(date.getTime()) ? '' : date.toLocaleDateString(language === 'ar' ? 'ar-JO' : 'en-US')}
+                          </span>
+                        </div>
+
+                        <button
+                          type="button"
+                          className="library-card__menu"
+                          aria-label={t.library.removeFromLibrary}
+                          title={t.library.removeFromLibrary}
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            handleDelete(item.id);
+                          }}
+                        >
+                          <MoreHorizontal size={18} />
+                        </button>
                       </div>
-                      <div style={{ fontSize: 'var(--text-xs)', color: 'var(--color-text-muted)' }}>
-                        <span lang="en">{t.platforms[item.platform] || item.platform}</span> · {new Date(item.savedAt || item.createdAt).toLocaleDateString(language === 'ar' ? 'ar-JO' : 'en-US')}
-                      </div>
+
+                      {preview && <p className="library-card__preview">{preview}</p>}
+
+                      <button
+                        type="button"
+                        className="library-card__open"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          navigate(`/app/result/${item.id}`);
+                        }}
+                      >
+                        <Eye size={14} />
+                        {copy.open}
+                      </button>
                     </div>
-                  </div>
-
-                  {preview && (
-                    <p className="library-card__preview">
-                      {preview}
-                    </p>
-                  )}
-
-                  <div style={{ display: 'flex', gap: 'var(--space-2)', justifyContent: 'flex-end' }}>
-                    <Button variant="ghost" size="sm" onClick={(event) => { event.stopPropagation(); navigate(`/app/result/${item.id}`); }}>
-                      <Eye size={14} /> {t.dashboard.viewResult}
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => { e.stopPropagation(); handleDelete(item.id); }}
-                      aria-label={t.library.removeFromLibrary}
-                      title={t.library.removeFromLibrary}
-                    >
-                      <FolderMinus size={14} />
-                    </Button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                  </article>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="library-no-results fx-card fx-card--quiet">
+              <Search size={24} />
+              <strong>{t.common.noResults}</strong>
+              <button type="button" onClick={() => { setSearch(''); setFilterTool('all'); }}>
+                {copy.filters}
+              </button>
+            </div>
+          )}
         </>
       )}
     </div>
