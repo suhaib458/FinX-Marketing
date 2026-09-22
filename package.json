@@ -34,7 +34,8 @@
     "verify:database": "npm run db:check && npm run db:status && npm run test:mysql && npm run smoke:backend && npm run db:verify-seed",
     "verify": "npm run verify:source && npm run verify:database",
     "ai:check": "npm --prefix backend run ai:check",
-    "ai:models": "npm --prefix backend run ai:models"
+    "ai:models": "npm --prefix backend run ai:models",
+    "storage:check": "npm --prefix backend run storage:check"
   },
   "dependencies": {
     "firebase": "^12.17.1",
