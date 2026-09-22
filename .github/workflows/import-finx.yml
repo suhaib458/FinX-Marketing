@@ -23,9 +23,9 @@ jobs:
         run: |
           set -euo pipefail
           cat .finx-import/chunk-* > /tmp/finx.b64
-          base64 -d /tmp/finx.b64 > /tmp/finx.tar.xz
+          base64 -d /tmp/finx.b64 > /tmp/finx.tar.gz
           mkdir -p /tmp/finx-src
-          tar -xJf /tmp/finx.tar.xz -C /tmp/finx-src
+          tar -xzf /tmp/finx.tar.gz -C /tmp/finx-src
 
       - name: Replace repository contents
         shell: bash
@@ -34,6 +34,13 @@ jobs:
           find . -mindepth 1 -maxdepth 1 ! -name .git ! -name .github ! -name .finx-import ! -name .finx-upload -exec rm -rf {} +
           cp -a /tmp/finx-src/. .
           rm -rf .finx-import .finx-upload
+
+      - name: Rebuild lockfiles
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm install --package-lock-only --ignore-scripts
+          npm --prefix backend install --package-lock-only --ignore-scripts
 
       - name: Commit imported project
         shell: bash
