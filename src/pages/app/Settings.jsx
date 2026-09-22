@@ -2,59 +2,13 @@ import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
-import { Sun, Moon, Globe, Palette, LogOut } from 'lucide-react';
+import {
+  Sun, Moon, Globe, Palette, LogOut, Crown, Pencil, Sparkles
+} from 'lucide-react';
 import Button from '../../components/ui/Button';
-import Card from '../../components/ui/Card';
 import Avatar from '../../components/ui/Avatar';
-import Badge from '../../components/ui/Badge';
 import { useNavigate } from 'react-router-dom';
 import { useCallback } from 'react';
-
-function SettingsSection({ title, children }) {
-  return (
-    <div className="settings-section">
-      <h2 className="settings-section__title">
-        {title}
-      </h2>
-      {children}
-    </div>
-  );
-}
-
-function SettingsRow({ icon: Icon, label, children, onClick }) {
-  const Tag = onClick ? 'button' : 'div';
-  return (
-    <Tag
-      className={`settings-row ${onClick ? 'settings-row--interactive' : ''}`}
-      onClick={onClick}
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: 'var(--space-4)',
-        transition: 'background-color var(--transition-fast)',
-        cursor: onClick ? 'pointer' : 'default',
-        width: '100%',
-        background: 'none',
-        border: 'none',
-        borderBottom: '1px solid var(--color-border)',
-        color: 'inherit',
-        font: 'inherit',
-        textAlign: 'inherit',
-      }}
-      onMouseEnter={onClick ? (e) => e.currentTarget.style.backgroundColor = 'var(--color-hover)' : undefined}
-      onMouseLeave={onClick ? (e) => e.currentTarget.style.backgroundColor = 'transparent' : undefined}
-    >
-      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-3)' }}>
-        {Icon && <Icon size={20} style={{ color: 'var(--color-text-muted)' }} />}
-        <span style={{ fontSize: 'var(--text-base)', fontWeight: 'var(--font-medium)' }}>{label}</span>
-      </div>
-      <div>
-        {children}
-      </div>
-    </Tag>
-  );
-}
 
 function Settings() {
   const { t, language, toggleLanguage } = useLanguage();
@@ -63,6 +17,26 @@ function Settings() {
   const { success } = useToast();
   const navigate = useNavigate();
 
+  const copy = language === 'ar'
+    ? {
+        accountSubtitle: 'إدارة ملفك الشخصي وتجربة FinX.',
+        editProfile: 'تعديل الملف الشخصي',
+        planTitle: 'الخطة والرصيد',
+        theme: 'الوضع',
+        currentTheme: isDark ? 'الوضع الداكن' : 'الوضع الفاتح',
+        languageLabel: 'اللغة',
+        danger: 'الحساب',
+      }
+    : {
+        accountSubtitle: 'Manage your profile and FinX experience.',
+        editProfile: 'Edit profile',
+        planTitle: 'Plan and credits',
+        theme: 'Theme',
+        currentTheme: isDark ? 'Dark mode' : 'Light mode',
+        languageLabel: 'Language',
+        danger: 'Account',
+      };
+
   const handleLogout = useCallback(async () => {
     await logout();
     success(t.toasts.logoutSuccess);
@@ -70,115 +44,107 @@ function Settings() {
   }, [logout, navigate, success, t]);
 
   return (
-    <div className="page-enter settings-page">
-      <h1 style={{
-        fontSize: 'var(--text-2xl)',
-        fontWeight: 'var(--font-bold)',
-        marginBottom: 'var(--space-8)',
-      }}>
-        {t.settings.title}
-      </h1>
+    <div className="page-enter settings-page settings-page--premium">
+      <header className="settings-premium-header">
+        <div>
+          <h1>{t.settings.title}</h1>
+          <p>{copy.accountSubtitle}</p>
+        </div>
+        <div className="settings-header-orb" aria-hidden="true"><Sparkles size={18} /></div>
+      </header>
 
-      {/* Profile */}
-      <SettingsSection title={t.settings.profile}>
-        <Card variant="quiet" compact style={{ padding: 0, overflow: 'hidden' }}>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 'var(--space-4)',
-            padding: 'var(--space-4)',
-            borderBottom: '1px solid var(--color-border)',
-          }}>
+      <section className="settings-premium-section">
+        <h2>{t.settings.profile}</h2>
+        <div className="settings-profile-card">
+          <div className="settings-profile-card__identity">
             <Avatar name={user?.name || ''} size="xl" />
             <div>
-              <div style={{ fontSize: 'var(--text-lg)', fontWeight: 'var(--font-semibold)' }}>
-                {user?.name || ''}
-              </div>
-              <div lang="en" dir="ltr" style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)' }}>
-                {user?.email || ''}
-              </div>
+              <strong>{user?.name || ''}</strong>
+              <span lang="en" dir="ltr">{user?.email || ''}</span>
             </div>
           </div>
-          <SettingsRow icon={Palette} label={t.settings.editBrand} onClick={() => navigate('/onboarding?restart=true')} />
-        </Card>
-      </SettingsSection>
+          <Button
+            variant="outline"
+            size="sm"
+            icon={Pencil}
+            onClick={() => navigate('/onboarding?restart=true')}
+          >
+            {copy.editProfile}
+          </Button>
+        </div>
+      </section>
 
-      {/* Plan */}
-      <SettingsSection title={t.settings.planAndCredits}>
-        <Card variant="quiet" compact style={{ padding: 0, overflow: 'hidden' }}>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: 'var(--space-4)',
-          }}>
-            <div>
-              <div style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)' }}>
-                {t.settings.currentPlan}
-              </div>
-              <div style={{
-                fontSize: 'var(--text-lg)',
-                fontWeight: 'var(--font-semibold)',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 'var(--space-2)',
-                marginTop: 'var(--space-1)',
-              }}>
-                {t.plans[user?.plan || 'free']?.name}
-                <Badge variant="primary">{t.common.free}</Badge>
-              </div>
-            </div>
-            <Button variant="outline" size="sm" onClick={() => navigate('/#pricing')}>
-              {t.settings.upgradePlan}
-            </Button>
+      <section className="settings-premium-section">
+        <h2>{copy.planTitle}</h2>
+        <div className="settings-plan-card">
+          <div className="settings-plan-card__icon"><Crown size={20} /></div>
+          <div className="settings-plan-card__copy">
+            <span>{t.settings.currentPlan}</span>
+            <strong>{t.plans[user?.plan || 'free']?.name || t.common.free}</strong>
           </div>
-        </Card>
-      </SettingsSection>
+          <Button variant="outline" size="sm" onClick={() => navigate('/#pricing')}>
+            {t.settings.upgradePlan}
+          </Button>
+        </div>
+      </section>
 
-      {/* Appearance */}
-      <SettingsSection title={t.settings.appearance}>
-        <Card variant="quiet" compact style={{ padding: 0, overflow: 'hidden' }}>
-          <SettingsRow icon={isDark ? Moon : Sun} label={isDark ? t.settings.darkMode : t.settings.lightMode} onClick={toggleTheme}>
-            <div style={{
-              width: 44,
-              height: 24,
-              borderRadius: 'var(--radius-full)',
-              background: isDark ? 'var(--color-accent)' : 'var(--color-border)',
-              position: 'relative',
-              transition: 'background-color var(--transition-fast)',
-            }}>
-              <div style={{
-                width: 18,
-                height: 18,
-                borderRadius: '50%',
-                background: 'var(--text-on-primary)',
-                position: 'absolute',
-                top: 3,
-                insetInlineStart: isDark ? 23 : 3,
-                transition: 'inset-inline-start var(--transition-fast)',
-              }} />
+      <section className="settings-premium-section">
+        <h2>{t.settings.appearance}</h2>
+        <div className="settings-preferences-card">
+          <button className="settings-preference-row" type="button" onClick={toggleLanguage}>
+            <div className="settings-preference-row__main">
+              <div className="settings-preference-row__icon"><Globe size={19} /></div>
+              <div>
+                <strong>{copy.languageLabel}</strong>
+                <span>{language === 'ar' ? t.settings.arabic : t.settings.english}</span>
+              </div>
             </div>
-          </SettingsRow>
+            <div className="settings-segmented" aria-hidden="true">
+              <span className={language === 'ar' ? 'settings-segmented__active' : ''}>العربية</span>
+              <span className={language === 'en' ? 'settings-segmented__active' : ''}>EN</span>
+            </div>
+          </button>
 
-          <SettingsRow icon={Globe} label={t.settings.language} onClick={toggleLanguage}>
-            <span lang={language === 'ar' ? 'ar' : 'en'} style={{ fontSize: 'var(--text-sm)', color: 'var(--color-text-muted)' }}>
-              {language === 'ar' ? t.settings.arabic : t.settings.english}
+          <div className="settings-preference-divider" />
+
+          <button className="settings-preference-row" type="button" onClick={toggleTheme}>
+            <div className="settings-preference-row__main">
+              <div className="settings-preference-row__icon">
+                {isDark ? <Moon size={19} /> : <Sun size={19} />}
+              </div>
+              <div>
+                <strong>{copy.theme}</strong>
+                <span>{copy.currentTheme}</span>
+              </div>
+            </div>
+
+            <span className={`settings-switch ${isDark ? 'settings-switch--on' : ''}`} aria-hidden="true">
+              <i />
             </span>
-          </SettingsRow>
-        </Card>
-      </SettingsSection>
+          </button>
 
-      {/* Logout */}
-      <div style={{ marginTop: 'var(--space-8)' }}>
-        <Button
-          variant="ghost"
-          icon={LogOut}
-          onClick={handleLogout}
-          style={{ color: 'var(--color-error)' }}
-        >
-          {t.nav.logout}
-        </Button>
-      </div>
+          <div className="settings-preference-divider" />
+
+          <button className="settings-preference-row" type="button" onClick={() => navigate('/onboarding?restart=true')}>
+            <div className="settings-preference-row__main">
+              <div className="settings-preference-row__icon"><Palette size={19} /></div>
+              <div>
+                <strong>{t.settings.editBrand}</strong>
+                <span>{t.dashboard.currentBrand}</span>
+              </div>
+            </div>
+            <Pencil size={16} className="settings-preference-row__action" />
+          </button>
+        </div>
+      </section>
+
+      <section className="settings-premium-section settings-premium-section--danger">
+        <h2>{copy.danger}</h2>
+        <button className="settings-logout-row" type="button" onClick={handleLogout}>
+          <LogOut size={18} />
+          <span>{t.nav.logout}</span>
+        </button>
+      </section>
     </div>
   );
 }
