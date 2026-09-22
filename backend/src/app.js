@@ -47,6 +47,16 @@ export function createApp(options = {}) {
   }));
   app.use(express.json({ limit: config.jsonBodyLimit }));
   app.use(express.urlencoded({ extended: false, limit: config.jsonBodyLimit }));
+
+  if (storageProvider.mode === 'local') {
+    app.use('/api/v1/uploads', express.static(storageProvider.rootDir, {
+      dotfiles: 'deny',
+      index: false,
+      fallthrough: false,
+      maxAge: '1h',
+    }));
+  }
+
   app.use('/api/v1', rateLimit({
     windowMs: config.rateLimitWindowMs,
     limit: config.rateLimitMax,
