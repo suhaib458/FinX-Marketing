@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+  <defs>
+    <linearGradient id="fx-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#73465F"/>
+      <stop offset="100%" stop-color="#925F7A"/>
+    </linearGradient>
+  </defs>
+  <rect width="32" height="32" rx="7" fill="url(#fx-grad)"/>
+  <text x="16" y="22" text-anchor="middle" fill="#FFF8F5" font-family="Inter, Segoe UI, Arial, sans-serif" font-weight="700" font-size="14">FX</text>
+</svg>

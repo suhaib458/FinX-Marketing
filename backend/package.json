@@ -1,0 +1,54 @@
+{
+  "name": "finx-backend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "scripts": {
+    "postinstall": "prisma generate",
+    "dev": "node --watch src/server.js",
+    "start": "node src/server.js",
+    "lint": "eslint .",
+    "test": "vitest --exclude tests/mysql.integration.test.js",
+    "test:run": "vitest run --exclude tests/mysql.integration.test.js",
+    "test:mysql": "node scripts/run-mysql-tests.js",
+    "smoke:api": "node scripts/api-smoke.js",
+    "openapi:validate": "node scripts/validate-openapi.js",
+    "db:validate": "prisma validate",
+    "db:generate": "prisma generate",
+    "db:check": "node scripts/check-database.js",
+    "db:verify-seed": "node scripts/verify-seed.js",
+    "db:migrate": "prisma migrate dev --name init_phase_5b",
+    "db:status": "prisma migrate status",
+    "db:seed": "prisma db seed",
+    "audit": "npm audit"
+  },
+  "dependencies": {
+    "@prisma/adapter-mariadb": "^7.0.0",
+    "@prisma/client": "^7.0.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.0.0",
+    "express": "^5.0.0",
+    "express-rate-limit": "^8.0.0",
+    "firebase-admin": "^14.2.0",
+    "helmet": "^8.0.0",
+    "mariadb": "^3.0.0",
+    "multer": "^2.3.0",
+    "pino": "^10.0.0",
+    "zod": "^4.0.0"
+  },
+  "devDependencies": {
+    "@apidevtools/swagger-parser": "^12.0.0",
+    "@eslint/js": "^10.0.0",
+    "eslint": "^10.0.0",
+    "globals": "^17.0.0",
+    "prisma": "^7.0.0",
+    "supertest": "^7.0.0",
+    "vitest": "^4.0.0"
+  },
+  "overrides": {
+    "uuid": "^11.1.1"
+  }
+}

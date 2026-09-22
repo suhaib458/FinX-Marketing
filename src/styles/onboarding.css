@@ -1,0 +1,319 @@
+/* Onboarding Wizard Styles */
+
+.onboarding-layout {
+  display: flex;
+  min-height: 100svh;
+  background: var(--color-background);
+}
+
+/* Header (Minimal) */
+.onboarding-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--header-height);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-inline: var(--space-6);
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+  z-index: 10;
+}
+
+.onboarding-header__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+/* Main Content Area */
+.onboarding-main {
+  flex: 1;
+  display: flex;
+  padding-top: var(--header-height);
+}
+
+.onboarding-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-6);
+  max-width: 600px;
+  margin: 0 auto;
+  position: relative;
+  overflow-y: auto;
+}
+
+@media (min-width: 1024px) {
+  .onboarding-content {
+    padding: var(--space-12);
+  }
+}
+
+/* Progress Stepper */
+.onboarding-stepper {
+  margin-bottom: var(--space-10);
+}
+
+.stepper-progress {
+  height: 6px;
+  background: var(--color-border);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  margin-bottom: var(--space-4);
+}
+
+.stepper-progress-bar {
+  height: 100%;
+  background: var(--color-accent);
+  transition: width 0.4s ease-out;
+}
+
+.stepper-text {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: var(--text-base);
+  color: var(--color-text-muted);
+  font-weight: var(--font-medium);
+}
+
+/* Form Steps */
+.onboarding-step-title {
+  font-size: clamp(1.875rem, 3vw, 2.25rem);
+  font-weight: var(--font-bold);
+  margin-bottom: var(--space-2);
+}
+
+.onboarding-step-subtitle {
+  color: var(--color-text-muted);
+  font-size: var(--text-base);
+  line-height: 1.8;
+  margin-bottom: var(--space-8);
+}
+
+.onboarding-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  flex: 1;
+}
+
+/* Actions Footer */
+.onboarding-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: var(--space-8);
+  margin-top: auto;
+}
+
+.onboarding-actions .btn-group {
+  display: flex;
+  gap: var(--space-3);
+  margin-inline-start: auto;
+}
+
+/* Visual Side Panel (Desktop) */
+.onboarding-visual {
+  display: none;
+  flex: 1;
+  background: rgba(var(--color-surface-rgb), 0.5);
+  border-inline-start: 1px solid var(--color-border);
+  padding: var(--space-12);
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+@media (min-width: 1024px) {
+  .onboarding-visual {
+    display: flex;
+  }
+}
+
+.onboarding-visual-card {
+  width: 100%;
+  max-width: 360px;
+  background: var(--color-surface);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
+  padding: var(--space-6);
+  border: 1px solid var(--color-border);
+  transition: all 0.3s ease;
+}
+
+.visual-mock-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+.visual-mock-logo {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.visual-mock-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.visual-mock-text-line {
+  height: 12px;
+  background: var(--color-border);
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+
+.visual-mock-image {
+  width: 100%;
+  aspect-ratio: 1;
+  background: var(--color-background);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-muted);
+  overflow: hidden;
+}
+
+.visual-mock-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Color Picker */
+.color-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(48px, 1fr));
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+.color-swatch {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: transform 0.2s;
+  padding: 0;
+}
+
+.color-swatch:hover {
+  transform: scale(1.1);
+}
+
+.color-swatch.active {
+  border-color: var(--color-text);
+  box-shadow: 0 0 0 2px var(--color-background);
+}
+
+/* Upload Zone */
+.upload-zone {
+  border: 2px dashed var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-8);
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: rgba(var(--color-surface-rgb), 0.3);
+}
+
+.upload-zone:hover {
+  border-color: var(--color-accent);
+  background: rgba(var(--color-accent-rgb), 0.05);
+}
+
+.upload-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: var(--space-4);
+  margin-top: var(--space-4);
+}
+
+.upload-preview-item {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+}
+
+.upload-preview-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.upload-remove-btn {
+  position: absolute;
+  top: 4px;
+  inset-inline-end: 4px;
+  background: var(--overlay);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 2;
+}
+
+/* Review Summary */
+.review-section {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  margin-bottom: var(--space-4);
+}
+
+.review-section__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-4);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.review-section__title {
+  font-weight: var(--font-bold);
+  font-size: var(--text-lg);
+}
+
+.review-item {
+  margin-bottom: var(--space-3);
+}
+
+.review-item:last-child {
+  margin-bottom: 0;
+}
+
+.review-label {
+  color: var(--color-text-muted);
+  font-size: var(--text-sm);
+  margin-bottom: 4px;
+}
+
+.review-value {
+  font-weight: var(--font-medium);
+}

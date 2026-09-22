@@ -1,0 +1,633 @@
+openapi: 3.1.0
+info:
+  title: FinX Backend API
+  version: 0.1.0
+  description: >-
+    Phase 5C API with Firebase bearer authentication. The development header scheme
+    remains disabled by default and can never be enabled in production.
+servers:
+  - url: http://localhost:3001/api/v1
+    description: Local development
+tags:
+  - name: System
+  - name: Authentication
+  - name: User
+  - name: Brands
+  - name: Credits
+  - name: Contents
+  - name: AI
+  - name: Assets
+paths:
+  /health/live:
+    get:
+      tags: [System]
+      summary: Process liveness
+      responses:
+        '200':
+          description: Process is running
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Liveness' }
+  /health/ready:
+    get:
+      tags: [System]
+      summary: MySQL readiness
+      responses:
+        '200':
+          description: MySQL is connected
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Readiness' }
+        '503':
+          description: MySQL is unavailable
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Readiness' }
+  /version:
+    get:
+      tags: [System]
+      summary: Safe application version
+      responses:
+        '200':
+          description: Version information
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [version, environment]
+                properties:
+                  version: { type: string }
+                  environment: { type: string }
+  /auth/session:
+    post:
+      tags: [Authentication]
+      security: [{ BearerAuth: [] }]
+      summary: Verify Firebase identity and idempotently synchronize the FinX user
+      description: The authenticated token is the only identity source; request body identity fields are ignored.
+      responses:
+        '200':
+          description: Safe synchronized application session
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SessionEnvelope' }
+        '401': { $ref: '#/components/responses/ErrorResponse' }
+        '403': { $ref: '#/components/responses/ErrorResponse' }
+        '409': { $ref: '#/components/responses/ErrorResponse' }
+  /me:
+    get:
+      tags: [User]
+      security: [{ BearerAuth: [] }, { DevUserHeader: [] }]
+      summary: Current authenticated user and wallet balance
+      responses:
+        '200': { $ref: '#/components/responses/UserResponse' }
+        '401': { $ref: '#/components/responses/ErrorResponse' }
+  /brands:
+    get:
+      tags: [Brands]
+      security: [{ BearerAuth: [] }, { DevUserHeader: [] }]
+      summary: List owned, non-deleted brands
+      parameters:
+        - { $ref: '#/components/parameters/Page' }
+        - { $ref: '#/components/parameters/Limit' }
+      responses:
+        '200':
+          description: Paginated brand collection
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - { $ref: '#/components/schemas/CollectionEnvelope' }
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items: { $ref: '#/components/schemas/Brand' }
+        '401': { $ref: '#/components/responses/ErrorResponse' }
+    post:
+      tags: [Brands]
+      security: [{ BearerAuth: [] }, { DevUserHeader: [] }]
+      summary: Create an owned brand
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/BrandInput' }
+      responses:
+        '201': { $ref: '#/components/responses/BrandResponse' }
+        '422': { $ref: '#/components/responses/ErrorResponse' }
+  /brands/{brandId}:
+    parameters:
+      - { $ref: '#/components/parameters/BrandId' }
+    get:
+      tags: [Brands]
+      security: [{ BearerAuth: [] }, { DevUserHeader: [] }]
+      summary: Read an owned brand
+      responses:
+        '200': { $ref: '#/components/responses/BrandResponse' }
+        '404': { $ref: '#/components/responses/ErrorResponse' }
+    patch:
+      tags: [Brands]
+      security: [{ BearerAuth: [] }, { DevUserHeader: [] }]
+      summary: Update an owned brand
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/BrandPatch' }
+      responses:
+        '200': { $ref: '#/components/responses/BrandResponse' }
+        '404': { $ref: '#/components/responses/ErrorResponse' }
+        '422': { $ref: '#/components/responses/ErrorResponse' }
+    delete:
+      tags: [Brands]
+      security: [{ BearerAuth: [] }, { DevUserHeader: [] }]
+      summary: Soft-delete an owned brand
+      responses:
+        '204': { description: Brand soft-deleted }
+        '404': { $ref: '#/components/responses/ErrorResponse' }
+  /credits:
+    get:
+      tags: [Credits]
+      security: [{ BearerAuth: [] }, { DevUserHeader: [] }]
+      summary: Current user's read-only wallet
+      responses:
+        '200':
+          description: Wallet balance
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: { $ref: '#/components/schemas/CreditWallet' }
+  /credits/ledger:
+    get:
+      tags: [Credits]
+      security: [{ BearerAuth: [] }, { DevUserHeader: [] }]
+      summary: Current user's credit history
+      parameters:
+        - { $ref: '#/components/parameters/Page' }
+        - { $ref: '#/components/parameters/Limit' }
+        - name: direction
+          in: query
+          schema: { type: string, enum: [CREDIT, DEBIT] }
+        - name: type
+          in: query
+          schema: { $ref: '#/components/schemas/LedgerType' }
+      responses:
+        '200':
+          description: Paginated ledger collection
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - { $ref: '#/components/schemas/CollectionEnvelope' }
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items: { $ref: '#/components/schemas/CreditLedgerEntry' }
+  /contents:
+    get:
+      tags: [Contents]
+      security: [{ BearerAuth: [] }, { DevUserHeader: [] }]
+      summary: List owned, non-deleted generated content
+      parameters:
+        - { $ref: '#/components/parameters/Page' }
+        - { $ref: '#/components/parameters/Limit' }
+        - name: tool
+          in: query
+          schema: { $ref: '#/components/schemas/GenerationTool' }
+        - name: platform
+          in: query
+          schema: { type: string, maxLength: 80 }
+        - name: saved
+          in: query
+          schema: { type: boolean }
+      responses:
+        '200':
+          description: Paginated content collection
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - { $ref: '#/components/schemas/CollectionEnvelope' }
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items: { $ref: '#/components/schemas/GeneratedContent' }
+  /contents/{contentId}:
+    get:
+      tags: [Contents]
+      security: [{ BearerAuth: [] }, { DevUserHeader: [] }]
+      summary: Read owned generated content
+      parameters:
+        - { $ref: '#/components/parameters/ContentId' }
+      responses:
+        '200':
+          description: Generated content
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: { $ref: '#/components/schemas/GeneratedContent' }
+        '404': { $ref: '#/components/responses/ErrorResponse' }
+  /ai/generate:
+    post:
+      tags: [AI]
+      security: [{ BearerAuth: [] }, { DevUserHeader: [] }]
+      summary: Generate marketing content with the configured server-side AI provider
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AIGenerationRequest' }
+      responses:
+        '201':
+          description: Generated marketing content
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: { $ref: '#/components/schemas/AIGenerationResult' }
+        '401': { $ref: '#/components/responses/ErrorResponse' }
+        '422': { $ref: '#/components/responses/ErrorResponse' }
+        '502': { $ref: '#/components/responses/ErrorResponse' }
+        '503': { $ref: '#/components/responses/ErrorResponse' }
+        '504': { $ref: '#/components/responses/ErrorResponse' }
+  /assets/upload:
+    post:
+      tags: [Assets]
+      summary: Upload an asset file
+      security:
+        - BearerAuth: []
+        - DevUserHeader: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file, type]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: File payload (JPEG, PNG, WebP, GIF, SVG)
+                type:
+                  $ref: '#/components/schemas/AssetType'
+                brandId:
+                  type: string
+                  format: uuid
+      responses:
+        '201':
+          description: Asset created
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: { $ref: '#/components/schemas/Asset' }
+        '400': { $ref: '#/components/responses/ErrorResponse' }
+        '401': { $ref: '#/components/responses/ErrorResponse' }
+        '413': { $ref: '#/components/responses/ErrorResponse' }
+        '422': { $ref: '#/components/responses/ErrorResponse' }
+  /assets:
+    get:
+      tags: [Assets]
+      summary: List user assets
+      security:
+        - BearerAuth: []
+        - DevUserHeader: []
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+        - name: type
+          in: query
+          schema: { $ref: '#/components/schemas/AssetType' }
+        - name: brandId
+          in: query
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Collection of assets
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/CollectionEnvelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items: { $ref: '#/components/schemas/Asset' }
+        '401': { $ref: '#/components/responses/ErrorResponse' }
+  /assets/{assetId}:
+    get:
+      tags: [Assets]
+      summary: Get an asset
+      security:
+        - BearerAuth: []
+        - DevUserHeader: []
+      parameters:
+        - $ref: '#/components/parameters/AssetId'
+      responses:
+        '200':
+          description: Asset details
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data]
+                properties:
+                  data: { $ref: '#/components/schemas/Asset' }
+        '401': { $ref: '#/components/responses/ErrorResponse' }
+        '404': { $ref: '#/components/responses/ErrorResponse' }
+    delete:
+      tags: [Assets]
+      summary: Delete an asset
+      security:
+        - BearerAuth: []
+        - DevUserHeader: []
+      parameters:
+        - $ref: '#/components/parameters/AssetId'
+      responses:
+        '204':
+          description: Asset deleted
+        '401': { $ref: '#/components/responses/ErrorResponse' }
+        '404': { $ref: '#/components/responses/ErrorResponse' }
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: Firebase-ID-Token
+      description: Firebase ID token. Token values are never logged or returned.
+    DevUserHeader:
+      type: apiKey
+      in: header
+      name: x-finx-dev-user-id
+      description: DEVELOPMENT/TEST ONLY. Requires ALLOW_DEV_AUTH=true and is rejected in production.
+  parameters:
+    BrandId:
+      name: brandId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    AssetId:
+      name: assetId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    ContentId:
+      name: contentId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    Page:
+      name: page
+      in: query
+      schema: { type: integer, minimum: 1, default: 1 }
+    Limit:
+      name: limit
+      in: query
+      schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+  responses:
+    ErrorResponse:
+      description: Safe API error
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorEnvelope' }
+    BrandResponse:
+      description: Brand resource
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [data]
+            properties:
+              data: { $ref: '#/components/schemas/Brand' }
+    UserResponse:
+      description: Safe current user
+      content:
+        application/json:
+          schema:
+            type: object
+            required: [data]
+            properties:
+              data: { $ref: '#/components/schemas/User' }
+  schemas:
+    Liveness:
+      type: object
+      required: [status]
+      properties:
+        status: { type: string, const: ok }
+    Readiness:
+      type: object
+      required: [status, database]
+      properties:
+        status: { type: string, enum: [ready, not_ready] }
+        database: { type: string, enum: [connected, unavailable] }
+    Pagination:
+      type: object
+      required: [page, limit, total, totalPages]
+      properties:
+        page: { type: integer }
+        limit: { type: integer }
+        total: { type: integer }
+        totalPages: { type: integer }
+    CollectionEnvelope:
+      type: object
+      required: [data, pagination]
+      properties:
+        data: { type: array, items: {} }
+        pagination: { $ref: '#/components/schemas/Pagination' }
+    ErrorEnvelope:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message, requestId]
+          properties:
+            code: { type: string }
+            message: { type: string }
+            details: { type: array, items: { type: object } }
+            requestId: { type: string }
+    User:
+      type: object
+      required: [id, email, emailVerified, name, role, status, planCode, onboardingCompleted, credits]
+      properties:
+        id: { type: string, format: uuid }
+        email: { type: string, format: email }
+        emailVerified: { type: boolean }
+        name: { type: string }
+        photoUrl: { type: [string, 'null'], format: uri }
+        role: { type: string, enum: [USER, ADMIN] }
+        status: { type: string, enum: [ACTIVE, SUSPENDED] }
+        planCode: { type: string }
+        onboardingCompleted: { type: boolean }
+        locale: { type: string }
+        timezone: { type: string }
+        credits: { type: integer }
+        createdAt: { type: string, format: date-time }
+    SessionEnvelope:
+      type: object
+      required: [data]
+      properties:
+        data:
+          type: object
+          required: [user, session]
+          properties:
+            user: { $ref: '#/components/schemas/User' }
+            session:
+              type: object
+              required: [authenticated]
+              properties:
+                authenticated: { type: boolean, const: true }
+    BrandInput:
+      type: object
+      additionalProperties: false
+      required: [businessName]
+      properties:
+        businessName: { type: string, minLength: 1, maxLength: 160 }
+        businessDescription: { type: [string, 'null'], maxLength: 5000 }
+        category: { type: [string, 'null'], maxLength: 120 }
+        targetAudience: { type: [string, 'null'], maxLength: 5000 }
+        productService: { type: [string, 'null'], maxLength: 300 }
+        productDescription: { type: [string, 'null'], maxLength: 5000 }
+        price: { type: [string, number, 'null'], pattern: '^\\d{1,9}(\\.\\d{1,3})?$' }
+        currency: { type: string, pattern: '^[A-Za-z]{3}$', default: JOD }
+        website: { type: [string, 'null'], format: uri }
+        username: { type: [string, 'null'] }
+        primaryColor: { type: [string, 'null'], pattern: '^#[0-9A-Fa-f]{6}$' }
+        secondaryColor: { type: [string, 'null'], pattern: '^#[0-9A-Fa-f]{6}$' }
+    BrandPatch:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        businessName: { type: string, minLength: 1, maxLength: 160 }
+        businessDescription: { type: [string, 'null'], maxLength: 5000 }
+        category: { type: [string, 'null'], maxLength: 120 }
+        targetAudience: { type: [string, 'null'], maxLength: 5000 }
+        productService: { type: [string, 'null'], maxLength: 300 }
+        productDescription: { type: [string, 'null'], maxLength: 5000 }
+        price: { type: [string, number, 'null'] }
+        currency: { type: string, pattern: '^[A-Za-z]{3}$' }
+        website: { type: [string, 'null'], format: uri }
+        username: { type: [string, 'null'] }
+        primaryColor: { type: [string, 'null'], pattern: '^#[0-9A-Fa-f]{6}$' }
+        secondaryColor: { type: [string, 'null'], pattern: '^#[0-9A-Fa-f]{6}$' }
+    Brand:
+      allOf:
+        - { $ref: '#/components/schemas/BrandInput' }
+        - type: object
+          required: [id, businessName, currency, createdAt, updatedAt]
+          properties:
+            id: { type: string, format: uuid }
+            createdAt: { type: string, format: date-time }
+            updatedAt: { type: string, format: date-time }
+    CreditWallet:
+      type: object
+      required: [balance, updatedAt]
+      properties:
+        balance: { type: integer }
+        updatedAt: { type: string, format: date-time }
+    LedgerType:
+      type: string
+      enum: [INITIAL_GRANT, RESERVATION, SETTLEMENT, REFUND, ADJUSTMENT]
+    CreditLedgerEntry:
+      type: object
+      required: [id, direction, type, amount, balanceAfter, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        direction: { type: string, enum: [CREDIT, DEBIT] }
+        type: { $ref: '#/components/schemas/LedgerType' }
+        amount: { type: integer }
+        balanceAfter: { type: integer }
+        description: { type: [string, 'null'] }
+        metadata: { type: [object, 'null'] }
+        createdAt: { type: string, format: date-time }
+    AIGenerationRequest:
+      type: object
+      additionalProperties: false
+      required: [tool]
+      properties:
+        tool:
+          type: string
+          enum: [social-post, ad-design, content-ideas, campaign]
+        params:
+          type: object
+          additionalProperties: true
+          default: {}
+        brand:
+          type: object
+          additionalProperties: true
+          default: {}
+    AIGenerationResult:
+      type: object
+      required: [id, type, platform, contentLanguage, tone, parameters, creditCost, content, createdAt, businessName, source]
+      properties:
+        id: { type: string }
+        type:
+          type: string
+          enum: [social-post, ad-design, content-ideas, campaign]
+        platform: { type: string }
+        contentLanguage: { type: string }
+        tone: { type: string }
+        parameters: { type: object }
+        creditCost: { type: integer, minimum: 0 }
+        content: { type: object }
+        createdAt: { type: string, format: date-time }
+        businessName: { type: string }
+        source: { type: string, const: gemini }
+    GenerationTool:
+      type: string
+      enum: [SOCIAL_POST, AD_DESIGN, CONTENT_IDEAS, CAMPAIGN]
+    GeneratedContent:
+      type: object
+      required: [id, generationJobId, tool, language, content, submittedParameters, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        brandId: { type: [string, 'null'], format: uuid }
+        generationJobId: { type: string, format: uuid }
+        originalContentId: { type: [string, 'null'], format: uuid }
+        tool: { $ref: '#/components/schemas/GenerationTool' }
+        language: { type: string }
+        platform: { type: [string, 'null'] }
+        title: { type: [string, 'null'] }
+        content: { type: object }
+        submittedParameters: { type: object }
+        savedAt: { type: [string, 'null'], format: date-time }
+        createdAt: { type: string, format: date-time }
+    AssetType:
+      type: string
+      enum: [LOGO, PRODUCT_IMAGE, GENERATED_IMAGE, ANALYTICS_SCREENSHOT]
+    AssetStatus:
+      type: string
+      enum: [PENDING, READY, FAILED]
+    Asset:
+      type: object
+      required: [id, userId, type, status, storageKey, mimeType, size, createdAt, updatedAt]
+      properties:
+        id: { type: string, format: uuid }
+        userId: { type: string, format: uuid }
+        brandId: { type: [string, 'null'], format: uuid }
+        type: { $ref: '#/components/schemas/AssetType' }
+        status: { $ref: '#/components/schemas/AssetStatus' }
+        storageKey: { type: string }
+        url: { type: [string, 'null'], format: uri }
+        mimeType: { type: string }
+        size: { type: integer }
+        width: { type: [integer, 'null'] }
+        height: { type: [integer, 'null'] }
+        originalName: { type: [string, 'null'] }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
