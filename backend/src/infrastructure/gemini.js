@@ -25,12 +25,36 @@ function parseJsonText(text) {
   }
 }
 
-function providerError(status) {
-  if (status === 400) return new AppError(502, 'AI_REQUEST_REJECTED', 'AI provider rejected the request');
-  if (status === 401 || status === 403) return new AppError(503, 'AI_AUTH_ERROR', 'AI provider authentication failed');
-  if (status === 404) return new AppError(503, 'AI_MODEL_NOT_FOUND', 'Configured AI model is unavailable');
-  if (status === 429) return new AppError(503, 'AI_RATE_LIMITED', 'AI provider is temporarily rate limited');
-  return new AppError(502, 'AI_PROVIDER_ERROR', 'AI provider rejected the generation request');
+function googleErrorMetadata(payload) {
+  const error = payload?.error && typeof payload.error === 'object' ? payload.error : {};
+  const details = Array.isArray(error.details) ? error.details : [];
+  const reason = details
+    .map((detail) => detail?.reason || detail?.metadata?.reason)
+    .find((value) => typeof value === 'string' && value.trim()) || null;
+
+  return {
+    providerStatus: typeof error.status === 'string' ? error.status : null,
+    providerReason: reason,
+  };
+}
+
+function providerError(status, payload) {
+  const metadata = googleErrorMetadata(payload);
+  const invalidKey = metadata.providerReason === 'API_KEY_INVALID'
+    || metadata.providerStatus === 'UNAUTHENTICATED';
+
+  if (invalidKey || status === 401 || status === 403) {
+    return new AppError(503, 'AI_AUTH_ERROR', 'AI provider authentication failed', metadata);
+  }
+  if (status === 400 && metadata.providerStatus === 'FAILED_PRECONDITION') {
+    return new AppError(503, 'AI_PROJECT_NOT_READY', 'AI provider project prerequisites are not satisfied', metadata);
+  }
+  if (status === 400) {
+    return new AppError(502, 'AI_REQUEST_REJECTED', 'AI provider rejected the request', metadata);
+  }
+  if (status === 404) return new AppError(503, 'AI_MODEL_NOT_FOUND', 'Configured AI model is unavailable', metadata);
+  if (status === 429) return new AppError(503, 'AI_RATE_LIMITED', 'AI provider is temporarily rate limited', metadata);
+  return new AppError(502, 'AI_PROVIDER_ERROR', 'AI provider rejected the generation request', metadata);
 }
 
 function isRetryable(status) {
@@ -128,13 +152,20 @@ export class GeminiProvider {
         };
       }
 
-      const error = providerError(response.status);
+      const payload = await response.json().catch(() => ({}));
+      const error = providerError(response.status, payload);
       return {
-        status: error.code === 'AI_AUTH_ERROR' ? 'invalid_key' : 'unavailable',
+        status: error.code === 'AI_AUTH_ERROR'
+          ? 'invalid_key'
+          : error.code === 'AI_PROJECT_NOT_READY'
+            ? 'project_not_ready'
+            : 'unavailable',
         configured: true,
         provider: 'gemini',
         model: this.model,
         code: error.code,
+        providerStatus: error.details?.providerStatus || null,
+        providerReason: error.details?.providerReason || null,
       };
     } catch (error) {
       return {
@@ -182,7 +213,7 @@ export class GeminiProvider {
         const payload = await response.json().catch(() => ({}));
 
         if (!response.ok) {
-          lastError = providerError(response.status);
+          lastError = providerError(response.status, payload);
           this.logger?.warn?.({
             provider: 'gemini',
             model: this.model,
