@@ -180,9 +180,6 @@ export class XKiroProvider {
         model: this.model,
         displayName: model.display_name || model.name || null,
         accessTier: model.access_tier || null,
-        plan: usagePayload?.plan ?? null,
-        freeTokensRemaining: usagePayload?.free_tokens?.remaining ?? null,
-        walletBalanceUsd: usagePayload?.wallet?.balance_usd ?? null,
       };
     } catch (error) {
       return {
