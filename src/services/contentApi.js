@@ -39,7 +39,7 @@ export const contentApi = {
     const payload = await authenticatedRequest(firebaseUser, `/contents/${id}/variations`, {
       method: 'POST',
       body: { options, idempotencyKey },
-      timeoutMs: 60_000,
+      timeoutMs: 75_000,
     });
     return payload.data;
   },
