@@ -43,6 +43,29 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Readiness' }
+  /health/ai:
+    get:
+      tags: [System]
+      summary: Safe Gemini configuration and connectivity probe
+      responses:
+        '200':
+          description: Gemini is configured and reachable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AIHealth'
+        '502':
+          description: Gemini is configured but unavailable
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AIHealth'
+        '503':
+          description: Gemini is not configured
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AIHealth'
   /version:
     get:
       tags: [System]
@@ -58,6 +81,7 @@ paths:
                 properties:
                   version: { type: string }
                   environment: { type: string }
+                  aiModel: { type: [string, 'null'] }
   /auth/session:
     post:
       tags: [Authentication]
@@ -434,6 +458,16 @@ components:
       properties:
         status: { type: string, enum: [ready, not_ready] }
         database: { type: string, enum: [connected, unavailable] }
+    AIHealth:
+      type: object
+      required: [status, configured, provider, model]
+      properties:
+        status: { type: string, enum: [ready, not_configured, invalid_key, unavailable, timeout] }
+        configured: { type: boolean }
+        provider: { type: string, const: gemini }
+        model: { type: [string, 'null'] }
+        displayName: { type: [string, 'null'] }
+        code: { type: string }
     Pagination:
       type: object
       required: [page, limit, total, totalPages]
@@ -567,10 +601,17 @@ components:
           type: object
           additionalProperties: true
           default: {}
+        brandId:
+          type: [string, 'null']
+          format: uuid
         brand:
           type: object
           additionalProperties: true
           default: {}
+        idempotencyKey:
+          type: string
+          minLength: 8
+          maxLength: 191
     AIGenerationResult:
       type: object
       required: [id, type, platform, contentLanguage, tone, parameters, creditCost, content, createdAt, businessName, source]
