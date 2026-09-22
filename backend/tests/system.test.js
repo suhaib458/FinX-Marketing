@@ -19,14 +19,14 @@ describe('system API', () => {
   it('reports AI readiness without exposing credentials', async () => {
     const aiProvider = {
       configured: true,
-      model: 'gemini-3.8-flash',
+      model: 'google/gemini-3.7-flash',
       async checkConnection() {
         return {
           status: 'ready',
           configured: true,
-          provider: 'gemini',
-          model: 'gemini-3.8-flash',
-          displayName: 'Gemini 3.8 Flash',
+          provider: 'xkiro',
+          model: 'google/gemini-3.7-flash',
+          displayName: 'Gemini 3.7 Flash',
         };
       },
     };
@@ -36,9 +36,9 @@ describe('system API', () => {
     expect(response.body).toEqual({
       status: 'ready',
       configured: true,
-      provider: 'gemini',
-      model: 'gemini-3.8-flash',
-      displayName: 'Gemini 3.8 Flash',
+      provider: 'xkiro',
+      model: 'google/gemini-3.7-flash',
+      displayName: 'Gemini 3.7 Flash',
     });
     expect(JSON.stringify(response.body)).not.toContain('apiKey');
   });
@@ -46,13 +46,13 @@ describe('system API', () => {
   it('reports unconfigured AI safely', async () => {
     const aiProvider = {
       configured: false,
-      model: 'gemini-3.8-flash',
+      model: 'google/gemini-3.7-flash',
       async checkConnection() {
         return {
           status: 'not_configured',
           configured: false,
-          provider: 'gemini',
-          model: 'gemini-3.8-flash',
+          provider: 'xkiro',
+          model: 'google/gemini-3.7-flash',
         };
       },
     };
