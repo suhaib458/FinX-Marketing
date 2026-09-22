@@ -34,7 +34,7 @@
   --tool-campaign: #9A4545;
 
   /* Typography */
-  --font-arabic: "Noto Sans Arabic", "Segoe UI", Tahoma, Arial, sans-serif;
+  --font-arabic: "Amiri", "Noto Naskh Arabic", serif;
   --font-english: "Inter", "Segoe UI", Arial, sans-serif;
   --font-ar: var(--font-arabic);
   --font-en: var(--font-english);
