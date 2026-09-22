@@ -525,7 +525,7 @@
   border-color: rgba(237, 103, 181, .48) !important;
   background: rgba(225, 73, 159, .035) !important;
   box-shadow:
-    0 0 0 3px rgba(223, 78, 159, .08) !important,
+    0 0 0 3px rgba(223, 78, 159, .08),
     0 0 22px rgba(223, 78, 159, .04) !important;
 }
 
