@@ -8,7 +8,7 @@ import { createDatabase } from './infrastructure/database.js';
 import { createFirebaseTokenVerifier } from './infrastructure/firebase-admin.js';
 import { createLogger } from './infrastructure/logger.js';
 import { createStorageProvider } from './infrastructure/storage.js';
-import { createGeminiProvider } from './infrastructure/gemini.js';
+import { createXKiroProvider } from './infrastructure/xkiro.js';
 import { createUploadMiddleware } from './middleware/upload.js';
 import { combinedAuth, firebaseAuth } from './middleware/firebase-auth.js';
 import { errorHandler, notFoundHandler } from './middleware/error-handler.js';
@@ -26,7 +26,7 @@ export function createApp(options = {}) {
   const database = options.database ?? createDatabase(config);
   const repositories = options.repositories ?? createRepositories(database.prisma);
   const storageProvider = options.storageProvider ?? createStorageProvider({ config, logger });
-  const aiProvider = options.aiProvider ?? createGeminiProvider(config, logger);
+  const aiProvider = options.aiProvider ?? createXKiroProvider(config, logger);
   const services = options.services ?? createServices(repositories, { storageProvider, config, logger, aiProvider });
   const tokenVerifier = options.tokenVerifier ?? createFirebaseTokenVerifier(config);
   const uploadMiddleware = options.uploadMiddleware ?? createUploadMiddleware(config);
