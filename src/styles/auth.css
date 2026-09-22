@@ -1465,3 +1465,26 @@
     animation: none !important;
   }
 }
+
+
+/* Auth compatibility refinements */
+.auth-layout:not(.auth-layout--login) .auth-visual-side {
+  display: none;
+}
+
+@media (min-width: 1024px) {
+  .auth-layout:not(.auth-layout--login) .auth-visual-side {
+    display: flex;
+  }
+}
+
+.auth-layout--login .auth-password-field .fx-input {
+  padding-right: 48px;
+}
+
+.auth-layout--login .password-toggle--premium,
+[dir='rtl'] .auth-layout--login .password-toggle--premium,
+[dir='ltr'] .auth-layout--login .password-toggle--premium {
+  right: 14px;
+  left: auto;
+}
