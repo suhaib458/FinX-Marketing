@@ -19,27 +19,29 @@ import {
   Store,
   Laptop,
   UsersRound,
-  Instagram,
-  Youtube,
-  Linkedin,
   ShieldCheck,
   Globe2,
   Layers3,
 } from 'lucide-react';
 
 const platforms = [
-  { label: 'Instagram', icon: Instagram },
-  { label: 'TikTok', icon: null },
-  { label: 'Facebook', icon: null },
-  { label: 'X', icon: null },
-  { label: 'YouTube', icon: Youtube },
-  { label: 'LinkedIn', icon: Linkedin },
+  { label: 'Instagram' },
+  { label: 'TikTok' },
+  { label: 'Facebook' },
+  { label: 'X' },
+  { label: 'YouTube' },
+  { label: 'LinkedIn' },
 ];
 
 function PlatformIcon({ item }) {
-  if (item.icon) {
-    const Icon = item.icon;
-    return <Icon size={16} />;
+  if (item.label === 'Instagram') {
+    return (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+        <rect x="3" y="3" width="18" height="18" rx="5" />
+        <circle cx="12" cy="12" r="4" />
+        <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" />
+      </svg>
+    );
   }
   if (item.label === 'TikTok') {
     return (
@@ -52,6 +54,23 @@ function PlatformIcon({ item }) {
     return (
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
         <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3" />
+      </svg>
+    );
+  }
+  if (item.label === 'YouTube') {
+    return (
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+        <path d="M22 12s0-3-1-5c-.5-1-1.4-1.6-2.5-1.8C16.6 5 12 5 12 5s-4.6 0-6.5.2C4.4 5.4 3.5 6 3 7c-1 2-1 5-1 5s0 3 1 5c.5 1 1.4 1.6 2.5 1.8C7.4 19 12 19 12 19s4.6 0 6.5-.2c1.1-.2 2-.8 2.5-1.8 1-2 1-5 1-5Z" />
+        <path d="m10 9 5 3-5 3V9Z" />
+      </svg>
+    );
+  }
+  if (item.label === 'LinkedIn') {
+    return (
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+        <rect x="3" y="9" width="4" height="11" />
+        <circle cx="5" cy="5" r="2" />
+        <path d="M11 20V9h4v2c1-1.5 2.3-2.3 4-2.3 2.8 0 3 2.4 3 5.3v6h-4v-5.4c0-1.6-.2-2.7-1.5-2.7-1.7 0-1.5 2-1.5 3.4V20h-4Z" />
       </svg>
     );
   }
@@ -119,7 +138,7 @@ function ToolVisual({ type }) {
   if (type === 'post') {
     return (
       <div className="landing-tool-preview landing-tool-preview--post">
-        <div className="landing-tool-preview__header"><Instagram size={13} /><span>Instagram</span></div>
+        <div className="landing-tool-preview__header"><PlatformIcon item={{ label: 'Instagram' }} /><span>Instagram</span></div>
         <i /><i /><i />
         <button tabIndex="-1">•••</button>
       </div>
@@ -449,7 +468,7 @@ function Landing() {
           <div className="landing-workflow-preview__form">
             <strong>{isArabic ? 'ما هو نشاطك؟' : 'What is your business?'}</strong>
             <label>{isArabic ? 'صف مشروعك باختصار' : 'Describe your business'}<i /></label>
-            <label>{isArabic ? 'المنصة' : 'Platform'}<span><Instagram size={13} /> Instagram</span></label>
+            <label>{isArabic ? 'المنصة' : 'Platform'}<span><PlatformIcon item={{ label: 'Instagram' }} /> Instagram</span></label>
           </div>
 
           <div className="landing-workflow-preview__result">
