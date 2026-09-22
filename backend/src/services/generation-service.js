@@ -1,5 +1,6 @@
 import crypto from 'node:crypto';
 import { AppError, notFound } from '../common/errors.js';
+import { jsonSchemaForTool, validateGeneratedContent } from '../schemas/ai-output-schema.js';
 
 const TOOL_SCHEMAS = {
   'social-post': `Return a JSON object with exactly these useful fields:\n{\n  "headline": string,\n  "caption": string,\n  "cta": string,\n  "hashtags": string[],\n  "visualConcept": string,\n  "platformMeta": {\n    "charCount": number,\n    "hashtagCount": number,\n    "bestTimeToPost": string\n  }\n}`,
@@ -24,6 +25,17 @@ function systemInstruction(tool, isVariation = false) {
 }
 
 function normalizeContent(tool, generated, params, brand) {
+  if (tool === 'social-post') {
+    return {
+      ...generated,
+      platformMeta: {
+        ...generated.platformMeta,
+        charCount: generated.caption.length,
+        hashtagCount: generated.hashtags.length,
+      },
+    };
+  }
+
   if (tool === 'ad-design') {
     return {
       ...generated,
@@ -34,6 +46,18 @@ function normalizeContent(tool, generated, params, brand) {
       designSize: params.designSize || 'square',
     };
   }
+
+  if (tool === 'campaign' && params.platform) {
+    return {
+      ...generated,
+      days: generated.days.map((day, index) => ({
+        ...day,
+        day: index + 1,
+        platform: params.platform,
+      })),
+    };
+  }
+
   return generated;
 }
 
@@ -89,10 +113,18 @@ export class GenerationService {
     }
 
     try {
-      const generated = await this.aiProvider.generateJson({
+      const rawGenerated = await this.aiProvider.generateJson({
         systemInstruction: systemInstruction(tool, Boolean(originalContent)),
-        prompt: JSON.stringify({ task: tool, params, brand: resolvedBrand, originalContent, userLocale: user.locale || 'ar' }, null, 2),
+        prompt: JSON.stringify({
+          task: tool,
+          params,
+          brand: resolvedBrand,
+          originalContent,
+          userLocale: user.locale || 'ar',
+        }, null, 2),
+        responseSchema: jsonSchemaForTool(tool),
       });
+      const generated = validateGeneratedContent(tool, rawGenerated);
       const normalized = normalizeContent(tool, generated, params, resolvedBrand);
       const completed = await this.repository.complete({
         jobId: reservation.job.id,
