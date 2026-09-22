@@ -10,13 +10,20 @@ function bearerToken(req) {
 }
 
 export function toFirebaseIdentity(decodedToken) {
+  const signInProvider = decodedToken.firebase?.sign_in_provider || null;
+  const identityProviders = decodedToken.firebase?.identities && typeof decodedToken.firebase.identities === 'object'
+    ? Object.keys(decodedToken.firebase.identities)
+    : [];
+  const providers = Array.from(new Set([signInProvider, ...identityProviders].filter(Boolean)));
+
   return {
     uid: decodedToken.uid || decodedToken.sub,
     email: typeof decodedToken.email === 'string' ? decodedToken.email : null,
     emailVerified: decodedToken.email_verified === true,
     name: typeof decodedToken.name === 'string' ? decodedToken.name : null,
     picture: typeof decodedToken.picture === 'string' ? decodedToken.picture : null,
-    provider: decodedToken.firebase?.sign_in_provider || null,
+    provider: signInProvider,
+    providers,
   };
 }
 
