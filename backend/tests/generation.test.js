@@ -49,7 +49,7 @@ describe('AI generation API', () => {
 
     expect(response.status).toBe(201);
     expect(response.body.data).toMatchObject({
-      type: 'social-post', platform: 'instagram', creditCost: 5, source: 'gemini', businessName: 'FinX Coffee', balance: 95,
+      type: 'social-post', platform: 'instagram', creditCost: 5, source: 'xkiro', businessName: 'FinX Coffee', balance: 95,
     });
     expect(response.body.data.id).toMatch(/^generated-content-/);
     expect(response.body.data.content.headline).toBe('قهوتك، بطريقتك');
