@@ -199,57 +199,125 @@ function PublicLayout() {
 
       {/* Mobile Menu */}
       {mobileMenuOpen && (
-        <div className="public-layout__mobile-menu">
-          <nav className="public-layout__mobile-nav">
-            <a href="#features" onClick={(e) => scrollToSection(e, 'features')} className="public-layout__mobile-link">
-              {t.nav.features}
-            </a>
-            <a href="#how-it-works" onClick={(e) => scrollToSection(e, 'how-it-works')} className="public-layout__mobile-link">
-              {t.nav.howItWorks}
-            </a>
-            <a href="#pricing" onClick={(e) => scrollToSection(e, 'pricing')} className="public-layout__mobile-link">
-              {t.nav.pricing}
-            </a>
-            {isLandingPage && (
+        isLandingPage ? (
+          <div className="public-layout__mobile-menu landing-mobile-menu">
+            <nav className="landing-mobile-menu__nav">
+              <a href="#features" onClick={(e) => scrollToSection(e, 'features')} className="landing-mobile-menu__link">
+                <Sparkles size={16} />
+                <span>{t.nav.features}</span>
+              </a>
+              <a href="#how-it-works" onClick={(e) => scrollToSection(e, 'how-it-works')} className="landing-mobile-menu__link">
+                <Settings size={16} />
+                <span>{t.nav.howItWorks}</span>
+              </a>
+              <a href="#pricing" onClick={(e) => scrollToSection(e, 'pricing')} className="landing-mobile-menu__link">
+                <Tag size={16} />
+                <span>{t.nav.pricing}</span>
+              </a>
               <button
                 type="button"
-                className="public-layout__mobile-link"
+                className="landing-mobile-menu__link"
                 onClick={() => {
                   info(t.toasts.featureUnavailable);
                   setMobileMenuOpen(false);
                 }}
               >
-                {language === 'ar' ? 'المدونة' : 'Blog'}
+                <BookOpen size={16} />
+                <span>{language === 'ar' ? 'المدونة' : 'Blog'}</span>
               </button>
-            )}
-          </nav>
-          <div className="public-layout__mobile-actions">
-            <div style={{ display: 'flex', gap: 'var(--space-2)', marginBottom: 'var(--space-4)' }}>
-              {!isLandingPage && (
+            </nav>
+
+            <div className="landing-mobile-menu__divider" />
+
+            <button
+              type="button"
+              className="landing-mobile-menu__utility"
+              onClick={toggleLanguage}
+            >
+              <Globe size={16} />
+              <span>{language === 'ar' ? 'English' : 'العربية'}</span>
+            </button>
+
+            <div className="landing-mobile-menu__auth">
+              {isAuthenticated ? (
+                <button
+                  type="button"
+                  className="landing-mobile-menu__primary"
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    navigate('/app');
+                  }}
+                >
+                  <span>{t.nav.dashboard}</span>
+                  <UserRound size={16} />
+                </button>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    className="landing-mobile-menu__secondary"
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      navigate('/login');
+                    }}
+                  >
+                    <span>{t.nav.login}</span>
+                    <UserRound size={16} />
+                  </button>
+                  <button
+                    type="button"
+                    className="landing-mobile-menu__primary"
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      navigate('/register');
+                    }}
+                  >
+                    <span>{language === 'ar' ? 'ابدأ مجانًا' : 'Start free'}</span>
+                    <ArrowRight size={16} />
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        ) : (
+          <div className="public-layout__mobile-menu">
+            <nav className="public-layout__mobile-nav">
+              <a href="#features" onClick={(e) => scrollToSection(e, 'features')} className="public-layout__mobile-link">
+                {t.nav.features}
+              </a>
+              <a href="#how-it-works" onClick={(e) => scrollToSection(e, 'how-it-works')} className="public-layout__mobile-link">
+                {t.nav.howItWorks}
+              </a>
+              <a href="#pricing" onClick={(e) => scrollToSection(e, 'pricing')} className="public-layout__mobile-link">
+                {t.nav.pricing}
+              </a>
+            </nav>
+            <div className="public-layout__mobile-actions">
+              <div style={{ display: 'flex', gap: 'var(--space-2)', marginBottom: 'var(--space-4)' }}>
                 <Button variant="secondary" fullWidth icon={isDark ? Sun : Moon} onClick={toggleTheme}>
                   {t.theme.toggle}
                 </Button>
-              )}
-              <Button variant="secondary" fullWidth icon={Globe} onClick={toggleLanguage}>
-                {language === 'ar' ? 'English' : 'العربية'}
-              </Button>
-            </div>
-            {isAuthenticated ? (
-              <Button variant="primary" fullWidth onClick={() => navigate('/app')}>
-                {t.nav.dashboard}
-              </Button>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
-                <Button variant="secondary" fullWidth onClick={() => navigate('/login')}>
-                  {t.nav.login}
-                </Button>
-                <Button variant="primary" fullWidth onClick={() => navigate('/register')}>
-                  {t.nav.register}
+                <Button variant="secondary" fullWidth icon={Globe} onClick={toggleLanguage}>
+                  {language === 'ar' ? 'English' : 'العربية'}
                 </Button>
               </div>
-            )}
+              {isAuthenticated ? (
+                <Button variant="primary" fullWidth onClick={() => navigate('/app')}>
+                  {t.nav.dashboard}
+                </Button>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+                  <Button variant="secondary" fullWidth onClick={() => navigate('/login')}>
+                    {t.nav.login}
+                  </Button>
+                  <Button variant="primary" fullWidth onClick={() => navigate('/register')}>
+                    {t.nav.register}
+                  </Button>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
+        )
       )}
 
       <main className="public-layout__content">
