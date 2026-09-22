@@ -35,7 +35,8 @@ const environmentSchema = z.object({
   XKIRO_API_KEY: z.string().trim().min(1).optional(),
   XKIRO_BASE_URL: z.string().url().default('https://api.xkiro.com/v1'),
   XKIRO_MODEL: z.string().trim().min(1).default('google/gemini-3.7-flash'),
-  AI_REASONING_EFFORT: z.enum(['none', 'minimal', 'low', 'medium', 'high', 'xhigh', 'max']).default('low'),
+  XKIRO_FALLBACK_MODEL: z.string().trim().min(1).default('qwen/qwen3.8-max:free'),
+  AI_REASONING_EFFORT: z.enum(['none', 'minimal', 'low', 'medium', 'high', 'xhigh', 'max']).default('none'),
   // Temporary compatibility alias for local environments that previously
   // stored an xKiro key under GEMINI_API_KEY.
   GEMINI_API_KEY: z.string().trim().min(1).optional(),
@@ -91,6 +92,7 @@ export function loadConfig(source = process.env) {
     xkiroApiKey: parsed.data.XKIRO_API_KEY || parsed.data.GEMINI_API_KEY,
     xkiroBaseUrl: parsed.data.XKIRO_BASE_URL,
     xkiroModel: parsed.data.XKIRO_MODEL,
+    xkiroFallbackModel: parsed.data.XKIRO_FALLBACK_MODEL,
     aiReasoningEffort: parsed.data.AI_REASONING_EFFORT,
     aiRequestTimeoutMs: parsed.data.AI_REQUEST_TIMEOUT_MS,
   };
