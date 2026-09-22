@@ -71,6 +71,10 @@ export default function VerifyEmail() {
   };
 
   const isUnverifiedState = emailNotVerified || (!user && !authError);
+  const isGoogleProvider = Boolean(firebaseUser?.providerData?.some(
+    (provider) => provider?.providerId === 'google.com',
+  ));
+  const shouldVerifyEmail = isUnverifiedState && !isGoogleProvider;
 
   return (
     <div className="auth-layout">
@@ -79,16 +83,16 @@ export default function VerifyEmail() {
         <div className="auth-content-wrapper">
           <main className="auth-content">
             <MailCheck size={48} style={{ color: 'var(--color-accent)', marginBottom: 'var(--space-4)' }} />
-            <h1 className="auth-title">{isUnverifiedState ? t.auth.verifyTitle : t.auth.syncTitle}</h1>
+            <h1 className="auth-title">{shouldVerifyEmail ? t.auth.verifyTitle : t.auth.syncTitle}</h1>
             <p className="auth-subtitle">
-              {isUnverifiedState ? t.auth.verifySubtitle : t.auth.syncSubtitle}
+              {shouldVerifyEmail ? t.auth.verifySubtitle : t.auth.syncSubtitle}
             </p>
             <p dir="ltr" style={{ textAlign: 'center', marginBottom: 'var(--space-6)' }}>{maskEmail(firebaseUser.email)}</p>
             {authError && <p className="auth-status-notice" role="alert">{t.auth.sessionSyncFailed}</p>}
             <Button fullWidth onClick={refresh} isLoading={isLoading} icon={RefreshCw}>
-              {isUnverifiedState ? t.auth.iVerified : t.auth.retrySession}
+              {shouldVerifyEmail ? t.auth.iVerified : t.auth.retrySession}
             </Button>
-            {isUnverifiedState && (
+            {shouldVerifyEmail && (
               <Button variant="outline" fullWidth onClick={resend} disabled={isLoading || cooldown > 0}
                 style={{ marginTop: 'var(--space-3)' }}>
                 {cooldown > 0 ? `${t.auth.resendIn} ${cooldown}` : t.auth.resendVerification}
