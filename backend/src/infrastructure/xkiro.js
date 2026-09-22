@@ -2,6 +2,13 @@ import { AppError } from '../common/errors.js';
 
 const DEFAULT_BASE_URL = 'https://api.xkiro.com/v1';
 const DEFAULT_RETRIES = 2;
+const FREE_FALLBACK_CANDIDATES = [
+  'qwen/qwen3.8-max:free',
+  'qwen/qwen3.7-plus:free',
+  'qwen/qwen3.5-flash:free',
+  'minimax/minimax-m3:free',
+  'sensenova/sensenova-6.8-flash-lite',
+];
 
 function parseJsonText(text) {
   if (!text) throw new AppError(502, 'AI_EMPTY_RESPONSE', 'AI provider returned an empty response');
@@ -90,7 +97,8 @@ export class XKiroProvider {
     model,
     baseUrl = DEFAULT_BASE_URL,
     timeoutMs = 75_000,
-    reasoningEffort = 'low',
+    reasoningEffort = 'none',
+    fallbackModel,
     fetchImpl = fetch,
     logger,
   }) {
@@ -99,8 +107,10 @@ export class XKiroProvider {
     this.baseUrl = String(baseUrl || DEFAULT_BASE_URL).replace(/\/$/, '');
     this.timeoutMs = timeoutMs;
     this.reasoningEffort = reasoningEffort;
+    this.fallbackModel = fallbackModel;
     this.fetchImpl = fetchImpl;
     this.logger = logger;
+    this.resolvedModel = null;
   }
 
   get configured() {
@@ -133,6 +143,68 @@ export class XKiroProvider {
     return Array.isArray(payload?.data) ? payload.data : [];
   }
 
+  async getUsage() {
+    const response = await this.fetchWithTimeout(`${this.baseUrl}/usage`, {
+      headers: this.authHeaders(),
+    });
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok) throw providerError(response.status, payload);
+    return payload;
+  }
+
+  hasPaidAccess(usage) {
+    const hasPlan = typeof usage?.plan === 'string' && usage.plan.trim().length > 0;
+    const walletBalance = Number.parseFloat(usage?.wallet?.balance_usd || '0');
+    return hasPlan || (Number.isFinite(walletBalance) && walletBalance > 0);
+  }
+
+  chooseFreeFallback(models) {
+    const preferredFree = this.fallbackModel
+      ? models.find((entry) => entry?.id === this.fallbackModel && entry?.access_tier === 'free')
+      : null;
+    if (preferredFree) return preferredFree;
+
+    for (const id of FREE_FALLBACK_CANDIDATES) {
+      const candidate = models.find((entry) => entry?.id === id && entry?.access_tier === 'free');
+      if (candidate) return candidate;
+    }
+
+    return models.find((entry) => entry?.access_tier === 'free') || null;
+  }
+
+  async resolveModel({ forceFree = false } = {}) {
+    if (this.resolvedModel && (!forceFree || this.resolvedModel.accessTier === 'free')) {
+      return this.resolvedModel;
+    }
+
+    const [usage, models] = await Promise.all([this.getUsage(), this.listModels()]);
+    const configured = models.find((entry) => entry?.id === this.model) || null;
+    const paidAccess = this.hasPaidAccess(usage);
+
+    let selected = configured;
+    if (
+      forceFree
+      || !configured
+      || (configured.access_tier === 'paid' && !paidAccess)
+      || (configured.access_tier === 'premium' && !paidAccess)
+    ) {
+      selected = this.chooseFreeFallback(models);
+    }
+
+    if (!selected) {
+      throw new AppError(503, 'AI_MODEL_NOT_FOUND', 'No usable AI model is available for this account');
+    }
+
+    this.resolvedModel = {
+      id: selected.id,
+      displayName: selected.display_name || selected.name || null,
+      accessTier: selected.access_tier || null,
+      configuredModel: this.model,
+      fallbackUsed: selected.id !== this.model,
+    };
+    return this.resolvedModel;
+  }
+
   async checkConnection() {
     if (!this.configured) {
       return {
@@ -144,49 +216,24 @@ export class XKiroProvider {
     }
 
     try {
-      const usageResponse = await this.fetchWithTimeout(`${this.baseUrl}/usage`, {
-        headers: this.authHeaders(),
-      });
-      const usagePayload = await usageResponse.json().catch(() => ({}));
-
-      if (!usageResponse.ok) {
-        const error = providerError(usageResponse.status, usagePayload);
-        return {
-          status: error.code === 'AI_AUTH_ERROR' ? 'invalid_key' : 'unavailable',
-          configured: true,
-          provider: 'xkiro',
-          model: this.model,
-          code: error.code,
-        };
-      }
-
-      const models = await this.listModels();
-      const model = models.find((entry) => entry?.id === this.model);
-
-      if (!model) {
-        return {
-          status: 'model_not_found',
-          configured: true,
-          provider: 'xkiro',
-          model: this.model,
-          code: 'AI_MODEL_NOT_FOUND',
-        };
-      }
+      const selected = await this.resolveModel();
 
       return {
         status: 'ready',
         configured: true,
         provider: 'xkiro',
-        model: this.model,
-        displayName: model.display_name || model.name || null,
-        accessTier: model.access_tier || null,
+        model: selected.id,
+        configuredModel: selected.configuredModel,
+        displayName: selected.displayName,
+        accessTier: selected.accessTier,
+        fallbackUsed: selected.fallbackUsed,
       };
     } catch (error) {
       return {
         status: error?.name === 'AbortError' ? 'timeout' : 'unavailable',
         configured: true,
         provider: 'xkiro',
-        model: this.model,
+        model: selected.id,
         code: error?.name === 'AbortError' ? 'AI_TIMEOUT' : (error?.code || 'AI_PROVIDER_ERROR'),
       };
     }
@@ -208,21 +255,23 @@ export class XKiroProvider {
       'Do not include Markdown fences or any text outside the JSON object.',
     ].join('\n');
 
-    const body = JSON.stringify({
-      model: this.model,
-      messages: [
-        { role: 'system', content: schemaInstruction },
-        { role: 'user', content: prompt },
-      ],
-      response_format: { type: 'json_object' },
-      max_tokens: 8192,
-      stream: false,
-    });
-
     const url = `${this.baseUrl}/chat/completions`;
+    let selected = await this.resolveModel();
     let lastError;
+    let accessFallbackAttempted = false;
 
     for (let attempt = 0; attempt <= DEFAULT_RETRIES; attempt += 1) {
+      const body = JSON.stringify({
+        model: selected.id,
+        messages: [
+          { role: 'system', content: schemaInstruction },
+          { role: 'user', content: prompt },
+        ],
+        response_format: { type: 'json_object' },
+        reasoning_effort: this.reasoningEffort,
+        max_tokens: 8192,
+        stream: false,
+      });
       try {
         const response = await this.fetchWithTimeout(url, {
           method: 'POST',
@@ -238,11 +287,22 @@ export class XKiroProvider {
           lastError = providerError(response.status, payload);
           this.logger?.warn?.({
             provider: 'xkiro',
-            model: this.model,
+            model: selected.id,
             statusCode: response.status,
             code: lastError.code,
             attempt: attempt + 1,
           }, 'AI provider request failed');
+
+          if (
+            response.status === 403
+            && selected.accessTier !== 'free'
+            && !accessFallbackAttempted
+          ) {
+            accessFallbackAttempted = true;
+            this.resolvedModel = null;
+            selected = await this.resolveModel({ forceFree: true });
+            continue;
+          }
 
           if (attempt < DEFAULT_RETRIES && isRetryable(response.status)) {
             await sleep(retryDelay(response, attempt));
@@ -283,6 +343,7 @@ export function createXKiroProvider(config, logger) {
     baseUrl: config.xkiroBaseUrl,
     timeoutMs: config.aiRequestTimeoutMs,
     reasoningEffort: config.aiReasoningEffort,
+    fallbackModel: config.xkiroFallbackModel,
     logger,
   });
 }
