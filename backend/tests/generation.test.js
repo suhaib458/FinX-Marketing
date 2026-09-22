@@ -56,6 +56,10 @@ describe('AI generation API', () => {
     expect(repositories.state.users.find((u) => u.id === USER_A).wallet.balance).toBe(95);
     expect(repositories.state.contents.some((c) => c.id === response.body.data.id)).toBe(true);
     expect(aiProvider.generateJson).toHaveBeenCalledOnce();
+    expect(aiProvider.generateJson.mock.calls[0][0].responseSchema).toMatchObject({
+      type: 'object',
+      required: expect.arrayContaining(['headline', 'caption', 'cta']),
+    });
     expect(JSON.stringify(response.body)).not.toContain('GEMINI_API_KEY');
   });
 
@@ -64,6 +68,23 @@ describe('AI generation API', () => {
     const { app, repositories } = buildTestApp({ aiProvider });
     const response = await auth(request(app).post('/api/v1/ai/generate')).send({ ...validBody, idempotencyKey: 'test-generation-failure' });
     expect(response.status).toBe(500);
+    expect(repositories.state.users.find((u) => u.id === USER_A).wallet.balance).toBe(100);
+    expect(repositories.state.ledger.some((entry) => entry.type === 'REFUND')).toBe(true);
+  });
+
+  it('refunds credits when the provider returns invalid structured content', async () => {
+    const aiProvider = {
+      model: 'test-model',
+      generateJson: vi.fn().mockResolvedValue({ headline: 'Only a headline' }),
+    };
+    const { app, repositories } = buildTestApp({ aiProvider });
+    const response = await auth(request(app).post('/api/v1/ai/generate')).send({
+      ...validBody,
+      idempotencyKey: 'invalid-structured-output',
+    });
+
+    expect(response.status).toBe(502);
+    expect(response.body.error.code).toBe('AI_INVALID_RESPONSE');
     expect(repositories.state.users.find((u) => u.id === USER_A).wallet.balance).toBe(100);
     expect(repositories.state.ledger.some((entry) => entry.type === 'REFUND')).toBe(true);
   });
