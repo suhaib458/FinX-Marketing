@@ -61,7 +61,7 @@ function normalizeContent(tool, generated, params, brand) {
   return generated;
 }
 
-function publicResult(record, balance, brandName = '', source = 'gemini') {
+function publicResult(record, balance, brandName = '', source = 'xkiro') {
   return {
     id: record.id,
     type: ENUM_TO_SLUG[record.tool],
