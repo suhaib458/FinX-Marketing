@@ -23,9 +23,9 @@ jobs:
         run: |
           set -euo pipefail
           cat .finx-import/chunk-* > /tmp/finx.b64
-          base64 -d /tmp/finx.b64 > /tmp/finx.tar.gz
+          base64 -d /tmp/finx.b64 > /tmp/finx.tar.xz
           mkdir -p /tmp/finx-src
-          tar -xzf /tmp/finx.tar.gz -C /tmp/finx-src
+          tar -xJf /tmp/finx.tar.xz -C /tmp/finx-src
 
       - name: Replace repository contents
         shell: bash
