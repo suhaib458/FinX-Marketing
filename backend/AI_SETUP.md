@@ -1,21 +1,26 @@
-# FinX Gemini integration
+# FinX AI integration — xKiro
 
-FinX uses the Gemini API only from the Express backend. The browser never receives the Gemini API key.
+FinX routes AI generation through the xKiro API from the Express backend only. The browser never receives the provider API key.
+
+## Why xKiro
+
+xKiro exposes an OpenAI-compatible API at `https://api.xkiro.com/v1` and supports model IDs in `vendor/model` form. FinX currently defaults to the Google Gemini family through xKiro.
 
 ## Local configuration
 
 Add these values to `backend/.env`:
 
 ```env
-GEMINI_API_KEY=replace-with-your-key
-GEMINI_MODEL=gemini-3.8-flash
-GEMINI_THINKING_LEVEL=low
-AI_REQUEST_TIMEOUT_MS=60000
+XKIRO_API_KEY=sk-xt-your-key
+XKIRO_BASE_URL=https://api.xkiro.com/v1
+XKIRO_MODEL=google/gemini-3.7-flash
+AI_REASONING_EFFORT=low
+AI_REQUEST_TIMEOUT_MS=75000
 ```
 
-Do **not** prefix the key with `VITE_` and do not place it in the root frontend `.env.local`.
+Do not prefix the key with `VITE_` and do not place it in the frontend `.env.local`.
 
-The repository `.gitignore` excludes `.env` files and local credentials.
+For migration only, FinX temporarily accepts an xKiro key stored under the old `GEMINI_API_KEY` variable. New environments should use `XKIRO_API_KEY`.
 
 ## Verify the provider
 
@@ -31,10 +36,12 @@ A healthy configuration returns a result similar to:
 {
   "status": "ready",
   "configured": true,
-  "provider": "gemini",
-  "model": "gemini-3.8-flash"
+  "provider": "xkiro",
+  "model": "google/gemini-3.7-flash"
 }
 ```
+
+The check validates the xKiro key using the account usage endpoint, then confirms the configured model exists in the live xKiro model catalog. The API key is never printed.
 
 When the backend is running, the same safe probe is available at:
 
@@ -42,18 +49,17 @@ When the backend is running, the same safe probe is available at:
 GET /api/v1/health/ai
 ```
 
-The endpoint never returns the API key.
-
 ## Runtime behavior
 
-- Model: Gemini 3.8 Flash by default.
-- Thinking level: `low` for lower latency and cost on marketing generation.
-- Structured JSON schemas are supplied to Gemini for all FinX generation tools.
-- Generated content is validated again on the backend before persistence.
+- Provider: xKiro.
+- Default model: `google/gemini-3.7-flash`.
+- Protocol: OpenAI-compatible `POST /v1/chat/completions`.
+- JSON mode is requested with `response_format: { "type": "json_object" }`.
+- FinX still validates every generated object with Zod before persistence.
 - Credits are reserved atomically before generation and automatically refunded when generation fails.
-- Idempotency prevents duplicate charges for repeated requests.
-- Transient Gemini 429/5xx failures are retried server-side.
-- Provider credentials and provider error details are never returned to the browser.
+- FinX idempotency prevents duplicate internal credit charges.
+- Retryable xKiro 429/5xx responses use bounded backoff.
+- Provider credentials and raw provider error messages are never returned to the browser.
 
 ## Supported FinX tools
 
@@ -63,4 +69,4 @@ The endpoint never returns the API key.
 - Seven-day campaign
 - Variations of previously generated content
 
-The current Ad Design tool produces AI-generated advertising copy and visual direction, then FinX renders the existing design preview. Native AI image generation is a separate capability and is not enabled by this integration.
+The Ad Design tool currently generates advertising copy and art direction. Native AI image generation is a separate capability.
