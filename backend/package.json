@@ -23,7 +23,8 @@
     "db:migrate": "prisma migrate dev --name init_phase_5b",
     "db:status": "prisma migrate status",
     "db:seed": "prisma db seed",
-    "audit": "npm audit"
+    "audit": "npm audit",
+    "ai:check": "node scripts/check-ai.js"
   },
   "dependencies": {
     "@prisma/adapter-mariadb": "^7.0.0",
