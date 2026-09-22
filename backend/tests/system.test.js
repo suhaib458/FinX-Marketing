@@ -16,6 +16,52 @@ describe('system API', () => {
     expect((await request(app).get('/api/v1/health/ready')).status).toBe(status);
   });
 
+  it('reports AI readiness without exposing credentials', async () => {
+    const aiProvider = {
+      configured: true,
+      model: 'gemini-3.8-flash',
+      async checkConnection() {
+        return {
+          status: 'ready',
+          configured: true,
+          provider: 'gemini',
+          model: 'gemini-3.8-flash',
+          displayName: 'Gemini 3.8 Flash',
+        };
+      },
+    };
+    const { app } = buildTestApp({ aiProvider });
+    const response = await request(app).get('/api/v1/health/ai');
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({
+      status: 'ready',
+      configured: true,
+      provider: 'gemini',
+      model: 'gemini-3.8-flash',
+      displayName: 'Gemini 3.8 Flash',
+    });
+    expect(JSON.stringify(response.body)).not.toContain('apiKey');
+  });
+
+  it('reports unconfigured AI safely', async () => {
+    const aiProvider = {
+      configured: false,
+      model: 'gemini-3.8-flash',
+      async checkConnection() {
+        return {
+          status: 'not_configured',
+          configured: false,
+          provider: 'gemini',
+          model: 'gemini-3.8-flash',
+        };
+      },
+    };
+    const { app } = buildTestApp({ aiProvider });
+    const response = await request(app).get('/api/v1/health/ai');
+    expect(response.status).toBe(503);
+    expect(response.body.status).toBe('not_configured');
+  });
+
   it('returns JSON 404 and a request ID', async () => {
     const { app } = buildTestApp();
     const response = await request(app).get('/missing');
