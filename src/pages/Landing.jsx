@@ -249,7 +249,7 @@ function Landing() {
         product: 'المنتج',
         help: 'المساعدة',
         legal: 'قانوني',
-        productLinks: ['المميزات', 'الأسعار', 'التحديثات', 'دليل الاستخدام'],
+        productLinks: ['المميزات', 'التحديثات', 'دليل الاستخدام'],
         helpLinks: ['مركز الدعم', 'تواصل معنا', 'الأسئلة الشائعة'],
         legalLinks: ['الشروط والأحكام', 'سياسة الخصوصية'],
         footerText: 'محتوى أفضل. نتائج أكبر. وقت أقل.',
@@ -300,7 +300,7 @@ function Landing() {
         product: 'Product',
         help: 'Help',
         legal: 'Legal',
-        productLinks: ['Features', 'Pricing', 'Updates', 'User guide'],
+        productLinks: ['Features', 'Updates', 'User guide'],
         helpLinks: ['Help center', 'Contact us', 'FAQ'],
         legalLinks: ['Terms', 'Privacy policy'],
         footerText: 'Better content. Bigger results. Less time.',
@@ -319,11 +319,6 @@ function Landing() {
     { icon: UsersRound, title: t.landing.audience3, body: copy.audience3Body, tone: 'pink' },
   ];
 
-  const plans = [
-    { key: 'free', featured: false },
-    { key: 'pro', featured: true },
-    { key: 'business', featured: false },
-  ];
 
   return (
     <div className="landing-page landing-v2">
@@ -515,47 +510,6 @@ function Landing() {
         </div>
       </section>
 
-      <section id="pricing" className="landing-v2-section landing-pricing-section">
-        <header className="landing-v2-section__header">
-          <h2>{t.landing.pricingTitle}</h2>
-          <p>{copy.pricingSubtitle}</p>
-          <div className="landing-billing-toggle">
-            <span>{copy.monthly}</span>
-            <span className="is-active">{copy.yearly}</span>
-            <b>{copy.save20}</b>
-          </div>
-        </header>
-
-        <div className="landing-pricing-grid">
-          {plans.map(({ key, featured }) => {
-            const plan = t.plans[key];
-            return (
-              <article className={`landing-price-card ${featured ? 'landing-price-card--featured' : ''}`} key={key}>
-                {featured && <span className="landing-price-card__popular">{copy.popular}</span>}
-                <h3>{plan.name}</h3>
-                <div className="landing-price-card__price">
-                  <strong lang="en">{plan.price}</strong>
-                  <span>{t.common.jod}</span>
-                </div>
-                <small>{plan.period}</small>
-                <ul>
-                  {plan.features.map((feature) => (
-                    <li key={feature}><Check size={15} /> {feature}</li>
-                  ))}
-                </ul>
-                <button
-                  className={`landing-btn ${featured ? 'landing-btn--primary' : 'landing-btn--secondary'}`}
-                  type="button"
-                  onClick={() => navigate('/register')}
-                >
-                  {featured ? copy.startNow : copy.start}
-                </button>
-              </article>
-            );
-          })}
-        </div>
-      </section>
-
       <section className="landing-final">
         <div className="landing-final__orb landing-final__orb--one" />
         <div className="landing-final__orb landing-final__orb--two" />
@@ -597,8 +551,8 @@ function Landing() {
 
           <div>
             <h3>{copy.product}</h3>
-            {copy.productLinks.map((label, index) => (
-              <a key={label} href={index === 0 ? '#features' : index === 1 ? '#pricing' : '#features'}>{label}</a>
+            {copy.productLinks.map((label) => (
+              <a key={label} href="#features">{label}</a>
             ))}
           </div>
 
