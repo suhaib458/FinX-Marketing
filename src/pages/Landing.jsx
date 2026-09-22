@@ -83,6 +83,8 @@ function HeroStudioVisual({ language }) {
     <div className="landing-studio" aria-hidden="true">
       <div className="landing-studio__halo landing-studio__halo--one" />
       <div className="landing-studio__halo landing-studio__halo--two" />
+      <div className="landing-studio__orbit landing-studio__orbit--one" />
+      <div className="landing-studio__orbit landing-studio__orbit--two" />
 
       <div className="landing-studio__panel landing-studio__panel--main">
         <div className="landing-studio__brand" lang="en">FinX</div>
@@ -126,6 +128,13 @@ function HeroStudioVisual({ language }) {
         <div className="landing-studio__bars">
           {[36, 62, 84].map((height) => <i key={height} style={{ height: `${height}%` }} />)}
         </div>
+      </div>
+
+      <div className="landing-studio__panel landing-studio__panel--caption">
+        <div className="landing-studio__caption-platform"><PlatformIcon item={{ label: 'Instagram' }} /><span>Instagram</span></div>
+        <strong>{ar ? 'جاهز للنشر' : 'Ready to publish'}</strong>
+        <i /><i /><i />
+        <div className="landing-studio__caption-actions"><span /><span /><span /></div>
       </div>
 
       <div className="landing-studio__spark landing-studio__spark--1"><Sparkles size={14} /></div>
@@ -206,7 +215,7 @@ function Landing() {
         credits: '100 رصيد مجاني',
         noCard: 'بدون بطاقة بنكية',
         platforms: 'مناسب لجميع المنصات',
-        trusted: 'يثق بنا المبدعون وأصحاب المشاريع',
+        trusted: 'محتوى مصمم ليلائم أهم المنصات',
         whyTitle: 'لماذا تختار FinX؟',
         whySubtitle: 'أكثر من مجرد أداة، فريقك التسويقي الذكي.',
         whyBrand: 'هوية علامتك محفوظة',
@@ -257,7 +266,7 @@ function Landing() {
         credits: '100 free credits',
         noCard: 'No credit card',
         platforms: 'Made for every platform',
-        trusted: 'Trusted by creators and business owners',
+        trusted: 'Content built for the platforms that matter',
         whyTitle: 'Why choose FinX?',
         whySubtitle: 'More than a tool — your intelligent marketing team.',
         whyBrand: 'Your brand identity stays consistent',
@@ -368,13 +377,10 @@ function Landing() {
       <section className="landing-trusted">
         <div className="landing-trusted__inner">
           <p>{copy.trusted}</p>
-          <div className="landing-trusted__logos" lang="en">
-            <span>Coca‑Cola</span>
-            <span className="landing-nike">NIKE</span>
-            <span></span>
-            <span>SAMSUNG</span>
-            <span>Google</span>
-            <span>+ {isArabic ? 'المزيد' : 'more'}</span>
+          <div className="landing-trusted__platforms" lang="en">
+            {platforms.map((item) => (
+              <span key={item.label}><PlatformIcon item={item} /> {item.label}</span>
+            ))}
           </div>
         </div>
       </section>
@@ -386,7 +392,13 @@ function Landing() {
         </header>
 
         <div className="landing-why-grid">
-          <WhyCard icon={WandSparkles} title={copy.whyBrand} body={copy.whyBrandBody} variant="green" />
+          <WhyCard icon={WandSparkles} title={copy.whyBrand} body={copy.whyBrandBody} variant="green">
+            <div className="landing-brand-kit" aria-hidden="true">
+              <div className="landing-brand-kit__palette"><i /><i /><i /></div>
+              <div className="landing-brand-kit__type"><strong lang="en">Aa</strong><span>Brand voice</span></div>
+              <div className="landing-brand-kit__check"><Check size={14} /></div>
+            </div>
+          </WhyCard>
           <WhyCard icon={Clock3} title={copy.whyTime} body={copy.whyTimeBody} variant="purple">
             <div className="landing-time-metric"><strong>4</strong><span>{isArabic ? 'ساعات' : 'hours'}</span><ArrowIcon size={16} /><strong>4</strong><span>{isArabic ? 'دقائق' : 'minutes'}</span></div>
           </WhyCard>
@@ -492,9 +504,12 @@ function Landing() {
         <div className="landing-audience-grid">
           {audience.map(({ icon: Icon, title, body, tone }) => (
             <article className={`landing-audience-card landing-audience-card--${tone}`} key={title}>
-              <div><Icon size={22} /></div>
+              <div className="landing-audience-card__icon"><Icon size={22} /></div>
               <h3>{title}</h3>
               <p>{body}</p>
+              <div className={`landing-audience-card__visual landing-audience-card__visual--${tone}`} aria-hidden="true">
+                <i /><i /><i />
+              </div>
             </article>
           ))}
         </div>
@@ -546,6 +561,16 @@ function Landing() {
         <div className="landing-final__orb landing-final__orb--two" />
         <div className="landing-final__float landing-final__float--one"><span>Your<br />Story<br />Matters</span></div>
         <div className="landing-final__float landing-final__float--two"><Lightbulb size={34} /></div>
+        <div className="landing-final__float landing-final__float--three" aria-hidden="true">
+          <div className="landing-final__coffee"><i /><span /></div>
+          <b>{isArabic ? 'صباح مختلف' : 'A different morning'}</b>
+        </div>
+        <div className="landing-final__float landing-final__float--four" aria-hidden="true">
+          <div className="landing-final__headset"><i /><i /><span /></div>
+          <b lang="en">Create louder.</b>
+        </div>
+        <div className="landing-final__light-trail landing-final__light-trail--one" />
+        <div className="landing-final__light-trail landing-final__light-trail--two" />
 
         <div className="landing-final__content">
           <h2>{copy.finalTitle}</h2>
