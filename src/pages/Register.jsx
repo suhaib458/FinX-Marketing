@@ -252,7 +252,7 @@ function Register() {
           <nav aria-label={language === 'ar' ? 'روابط المساعدة' : 'Help links'}>
             <button type="button" onClick={() => info(t.toasts.legalUnavailable)}>{language === 'ar' ? 'الخصوصية' : 'Privacy'}</button>
             <button type="button" onClick={() => info(t.toasts.legalUnavailable)}>{language === 'ar' ? 'الشروط' : 'Terms'}</button>
-            <button type="button" onClick={() => info(t.toasts.featureUnavailable)}>{language === 'ar' ? 'المساعدة' : 'Help'}</button>
+            <button type="button" onClick={() => navigate('/help')}>{language === 'ar' ? 'المساعدة' : 'Help'}</button>
           </nav>
         </footer>
       </section>
