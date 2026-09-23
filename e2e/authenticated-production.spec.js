@@ -27,7 +27,8 @@ test.describe('authenticated production journey', () => {
 
     await page.locator('button:has(svg.lucide-save)').click();
     await page.goto('/app/library');
-    await expect(page.locator('.library-card')).toHaveCountGreaterThan(0);
+    const libraryCount = await page.locator('.library-card').count();
+    expect(libraryCount).toBeGreaterThan(0);
 
     await page.goto('/app/settings');
     await expect(page.locator('.settings-page')).toBeVisible();
