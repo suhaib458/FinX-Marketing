@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -6,9 +6,9 @@ import {
   Eye, Search, MoreHorizontal, SlidersHorizontal, ArrowUpDown
 } from 'lucide-react';
 import Button from '../../components/ui/Button';
-import mockGeneration from '../../services/mockGeneration';
 import { useToast } from '../../context/ToastContext';
 import { useAuth } from '../../context/AuthContext';
+import { useAppData } from '../../context/AppDataContext';
 import contentApi from '../../services/contentApi';
 
 const typeIcons = {
@@ -79,7 +79,11 @@ function Library() {
   const navigate = useNavigate();
   const { success, error: toastError } = useToast();
   const { firebaseUser } = useAuth();
-  const [savedItems, setSavedItems] = useState([]);
+  const { contentItems, updateContentItem } = useAppData();
+  const savedItems = useMemo(
+    () => contentItems.filter((item) => Boolean(item.savedAt || item.saved)),
+    [contentItems],
+  );
   const [filterTool, setFilterTool] = useState('all');
   const [search, setSearch] = useState('');
   const [sortOrder, setSortOrder] = useState('newest');
@@ -102,25 +106,11 @@ function Library() {
         generated: 'Saved content',
       };
 
-  useEffect(() => {
-    let cancelled = false;
-    setSavedItems(mockGeneration.getSavedResults());
-    contentApi.list(firebaseUser, { saved: true, page: 1, limit: 100 })
-      .then((payload) => {
-        if (cancelled) return;
-        setSavedItems(payload.data);
-        payload.data.forEach((item) => mockGeneration.saveExternalResult(item));
-      })
-      .catch(() => { /* keep cached library during temporary outages */ });
-    return () => { cancelled = true; };
-  }, [firebaseUser]);
-
   const handleDelete = async (id) => {
     if (!window.confirm(t.library.removeConfirm)) return;
     try {
       await contentApi.setSaved(firebaseUser, id, false);
-      mockGeneration.updateResult(id, { saved: false, savedAt: null });
-      setSavedItems((previous) => previous.filter((item) => item.id !== id));
+      updateContentItem(id, { saved: false, savedAt: null });
       success(t.toasts.removedFromLibrary);
     } catch (err) {
       toastError(err.message || t.toasts.errorOccurred);
