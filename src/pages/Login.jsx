@@ -50,7 +50,10 @@ function Login() {
 
     try {
       const user = await login(email.trim().toLowerCase(), password);
-      if (!user) return;
+      if (!user) {
+        navigate('/verify-email', { replace: true, state: { from: location.state?.from } });
+        return;
+      }
       success(t.toasts.loginSuccess);
       const requested = safeProtectedDestination(requestedPath(location.state?.from));
       if (user.onboarded) {
@@ -73,10 +76,7 @@ function Login() {
   const handleGoogleLogin = async () => {
     try {
       const user = await loginWithGoogle();
-      if (!user) {
-        navigate('/verify-email', { replace: true, state: { from: location.state?.from } });
-        return;
-      }
+      if (!user) return;
       success(t.toasts.loginSuccess);
       const requested = safeProtectedDestination(requestedPath(location.state?.from));
       if (user.onboarded) {
