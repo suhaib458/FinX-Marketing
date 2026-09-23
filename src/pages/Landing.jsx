@@ -1,5 +1,5 @@
 import { useLanguage } from '../context/LanguageContext';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useToast } from '../context/ToastContext';
 import {
   MessageSquare,
@@ -14,7 +14,6 @@ import {
   Check,
   BarChart3,
   Image as ImageIcon,
-  WandSparkles,
   TrendingUp,
   Store,
   Laptop,
@@ -137,8 +136,6 @@ function HeroStudioVisual({ language }) {
         <div className="landing-studio__caption-actions"><span /><span /><span /></div>
       </div>
 
-      <div className="landing-studio__spark landing-studio__spark--1"><Sparkles size={14} /></div>
-      <div className="landing-studio__spark landing-studio__spark--2"><WandSparkles size={13} /></div>
     </div>
   );
 }
@@ -185,7 +182,7 @@ function ToolVisual({ type }) {
 function WhyCard({ icon: Icon, title, body, variant = 'purple', children }) {
   return (
     <article className={`landing-why-card landing-why-card--${variant}`}>
-      <div className="landing-why-card__icon"><Icon size={20} /></div>
+      {Icon && <div className="landing-why-card__icon"><Icon size={20} /></div>}
       <div className="landing-why-card__copy">
         <h3>{title}</h3>
         <p>{body}</p>
@@ -327,7 +324,6 @@ function Landing() {
       <section className="landing-v2-hero">
         <div className="landing-v2-hero__copy">
           <div className="landing-kicker">
-            <Sparkles size={14} />
             {copy.badge}
           </div>
 
@@ -387,7 +383,7 @@ function Landing() {
         </header>
 
         <div className="landing-why-grid">
-          <WhyCard icon={WandSparkles} title={copy.whyBrand} body={copy.whyBrandBody} variant="green">
+          <WhyCard icon={null} title={copy.whyBrand} body={copy.whyBrandBody} variant="green">
             <div className="landing-brand-kit" aria-hidden="true">
               <div className="landing-brand-kit__palette"><i /><i /><i /></div>
               <div className="landing-brand-kit__type"><strong lang="en">Aa</strong><span>Brand voice</span></div>
@@ -558,8 +554,8 @@ function Landing() {
 
           <div>
             <h3>{copy.help}</h3>
-            {copy.helpLinks.map((label) => (
-              <button type="button" key={label} onClick={() => info(t.toasts.featureUnavailable)}>{label}</button>
+            {copy.helpLinks.map((label, index) => (
+              <Link key={label} to={['/help', '/contact', '/faq'][index]}>{label}</Link>
             ))}
           </div>
 
