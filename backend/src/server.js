@@ -22,33 +22,6 @@ function classifyStartup(error) {
 let runtime;
 let startupCode = null;
 let startupMeta = null;
-let startupProbe = null;
-
-async function probeRuntimeImports() {
-  const checks = [
-    ['prisma-adapter', () => import('@prisma/adapter-mariadb')],
-    ['prisma-client', () => import('./generated/prisma/client.ts')],
-    ['firebase-app', () => import('firebase-admin/app')],
-    ['firebase-auth', () => import('firebase-admin/auth')],
-    ['firebase-storage', () => import('firebase-admin/storage')],
-    ['pino', () => import('pino')],
-    ['express-rate-limit', () => import('express-rate-limit')],
-  ];
-
-  for (const [label, load] of checks) {
-    try {
-      await load();
-    } catch (error) {
-      return {
-        module: label,
-        code: error?.code ? String(error.code).slice(0, 64) : null,
-        name: String(error?.name || 'Error').slice(0, 48),
-      };
-    }
-  }
-  return { module: 'app-internal', code: null, name: null };
-}
-
 try {
   const appModule = await import('./app.js');
   runtime = appModule.createApp();
@@ -58,8 +31,7 @@ try {
     name: String(error?.name || 'Error').slice(0, 48),
     nodeCode: error?.code ? String(error.code).slice(0, 64) : null,
   };
-  startupProbe = await probeRuntimeImports();
-  console.error('[FINX_STARTUP_ERROR]', startupCode, startupMeta, startupProbe);
+  console.error('[FINX_STARTUP_ERROR]', startupCode, startupMeta);
 }
 
 const app = runtime?.app ?? express();
@@ -67,10 +39,10 @@ const app = runtime?.app ?? express();
 if (!runtime) {
   app.disable('x-powered-by');
   app.get('/api/v1/health/live', (_req, res) => {
-    res.status(503).json({ status: 'startup_error', code: startupCode, diagnostic: startupMeta, probe: startupProbe });
+    res.status(503).json({ status: 'startup_error', code: startupCode, diagnostic: startupMeta });
   });
   app.get('/api/v1/health/ready', (_req, res) => {
-    res.status(503).json({ status: 'not_ready', code: startupCode, diagnostic: startupMeta, probe: startupProbe });
+    res.status(503).json({ status: 'not_ready', code: startupCode, diagnostic: startupMeta });
   });
   app.get('/api/v1/version', (_req, res) => {
     res.status(503).json({ status: 'startup_error', code: startupCode });
