@@ -248,7 +248,7 @@ function Register() {
         </div>
 
         <footer className="auth-footer auth-footer--premium auth-footer--register">
-          <span dir="ltr">© {new Date().getFullYear()} FinX. {language === 'ar' ? 'All rights reserved.' : 'All rights reserved.'}</span>
+          <span dir="ltr">© {new Date().getFullYear()} FinX</span>
           <nav aria-label={language === 'ar' ? 'روابط المساعدة' : 'Help links'}>
             <button type="button" onClick={() => info(t.toasts.legalUnavailable)}>{language === 'ar' ? 'الخصوصية' : 'Privacy'}</button>
             <button type="button" onClick={() => info(t.toasts.legalUnavailable)}>{language === 'ar' ? 'الشروط' : 'Terms'}</button>
