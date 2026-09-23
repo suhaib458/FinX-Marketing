@@ -81,8 +81,12 @@ export default function MobileSplash() {
         muted
         playsInline
         preload="auto"
-        onLoadedData={() => setVideoReady(true)}
-        onCanPlay={() => setVideoReady(true)}
+        onLoadedMetadata={(event) => {
+          const video = event.currentTarget;
+          if (Number.isFinite(video.duration) && video.duration > 1) {
+            video.currentTime = Math.min(0.18, Math.max(0, video.duration - 0.2));
+          }
+        }}
         onPlaying={() => setVideoReady(true)}
         onEnded={finish}
         onError={finish}
