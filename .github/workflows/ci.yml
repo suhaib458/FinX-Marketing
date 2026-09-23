@@ -25,7 +25,7 @@ jobs:
       VITE_FIREBASE_APP_ID: 1:123456789:web:test
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Use Node.js 24
         uses: actions/setup-node@v4
@@ -78,7 +78,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Use Node.js 24
         uses: actions/setup-node@v4
