@@ -25,8 +25,12 @@ jobs:
             live_code=$(curl -L -sS -o /tmp/finx-live -w "%{http_code}" "$BASE_URL/api/v1/health/live" || true)
             ready_code=$(curl -L -sS -o /tmp/finx-ready -w "%{http_code}" "$BASE_URL/api/v1/health/ready" || true)
             version_code=$(curl -L -sS -o /tmp/finx-version -w "%{http_code}" "$BASE_URL/api/v1/version" || true)
+            storage_code=$(curl -L -sS -o /tmp/finx-storage -w "%{http_code}" "$BASE_URL/api/v1/health/storage" || true)
 
-            echo "Attempt $attempt: root=$root_code login=$login_code live=$live_code ready=$ready_code version=$version_code"
+            echo "Attempt $attempt: root=$root_code login=$login_code live=$live_code ready=$ready_code version=$version_code storage=$storage_code"
+            echo "Storage health response:"
+            cat /tmp/finx-storage || true
+            echo
 
             if [[ "$root_code" == "200"               && "$login_code" == "200"               && "$live_code" == "200"               && "$ready_code" == "200"               && "$version_code" == "200" ]]               && grep -q '"status":"ok"' /tmp/finx-live               && grep -q '"status":"ready"' /tmp/finx-ready               && grep -q '"database":"connected"' /tmp/finx-ready; then
               echo "FinX production smoke test passed."
