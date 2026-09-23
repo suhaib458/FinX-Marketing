@@ -1,6 +1,5 @@
-// Transitional generation coordinator. In production the backend is authoritative
-// for credits, persistence, and idempotency. Local mocks remain available only
-// when VITE_AI_MODE=mock for offline/demo development.
+// Generation coordinator. Production always uses the backend as the source of truth.
+// Local mocks are isolated to VITE_AI_MODE=mock for offline/demo development only.
 import mockCredits from './mockCredits';
 import mockGeneration from './mockGeneration';
 import generationApi from './generationApi';
@@ -41,10 +40,7 @@ export async function generateWithCredits(tool, params, brand, { firebaseUser } 
     throw error;
   }
 
-  const result = await generationApi.generate(firebaseUser, { tool, params, brand });
-  mockGeneration.saveExternalResult(result); // fast local cache only, not source of truth
-  if (Number.isFinite(result.balance)) mockCredits.setBalance(result.balance);
-  return result;
+  return generationApi.generate(firebaseUser, { tool, params, brand });
 }
 
 export async function generateVariationWithCredits(originalId, options, { firebaseUser } = {}) {
@@ -66,8 +62,5 @@ export async function generateVariationWithCredits(originalId, options, { fireba
     throw error;
   }
 
-  const variation = await contentApi.variation(firebaseUser, originalId, options);
-  mockGeneration.saveExternalResult(variation);
-  if (Number.isFinite(variation.balance)) mockCredits.setBalance(variation.balance);
-  return variation;
+  return contentApi.variation(firebaseUser, originalId, options);
 }
