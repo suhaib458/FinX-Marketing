@@ -1,0 +1,41 @@
+name: FinX Authenticated Production E2E
+
+on:
+  workflow_dispatch:
+    inputs:
+      run_generation:
+        description: Run the credit-consuming AI generation journey
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  authenticated-e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      E2E_BASE_URL: https://fin-x-marketing.vercel.app
+      E2E_TEST_EMAIL: ${{ secrets.E2E_TEST_EMAIL }}
+      E2E_TEST_PASSWORD: ${{ secrets.E2E_TEST_PASSWORD }}
+      RUN_AUTH_E2E: ${{ inputs.run_generation }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: Install Playwright without changing the lockfile
+        run: npm install --no-save --package-lock=false @playwright/test@1.55.0
+
+      - name: Install browser
+        run: npx playwright install --with-deps chromium
+
+      - name: Run authenticated production journey
+        run: npx playwright test e2e/authenticated-production.spec.js --project=desktop-chromium
