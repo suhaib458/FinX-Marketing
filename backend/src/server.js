@@ -1,6 +1,12 @@
 import express from 'express';
 
 function classifyStartup(error) {
+  if (error?.finxStartupStage) {
+    return `STAGE_${String(error.finxStartupStage).toUpperCase()}`;
+  }
+  if (error?.code === 'ERR_MODULE_NOT_FOUND') return 'MODULE_NOT_FOUND';
+  if (error?.code === 'ERR_UNKNOWN_FILE_EXTENSION') return 'UNKNOWN_FILE_EXTENSION';
+  if (error?.code === 'ERR_PACKAGE_PATH_NOT_EXPORTED') return 'PACKAGE_PATH_NOT_EXPORTED';
   const message = String(error?.message || '');
   if (message.includes('Invalid environment configuration')) return 'ENV_CONFIGURATION';
   if (message.includes('not valid JSON')) return 'SERVICE_ACCOUNT_JSON';
