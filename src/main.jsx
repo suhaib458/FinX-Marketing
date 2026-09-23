@@ -12,6 +12,7 @@ import './styles/create.css';
 import './styles/premium-reference.css';
 import './styles/premium-phase2.css';
 import './styles/mobile-reference.css';
+import './styles/plans.css';
 import App from './App';
 
 createRoot(document.getElementById('root')).render(
