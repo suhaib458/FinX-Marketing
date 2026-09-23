@@ -10,8 +10,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import Avatar from '../ui/Avatar';
 import Button from '../ui/Button';
-import mockCredits from '../../services/mockCredits';
-import mockBrand from '../../services/mockBrand';
+import { useAppData } from '../../context/AppDataContext';
 
 const navItems = [
   { key: 'dashboard', path: '/app', icon: LayoutDashboard, end: true },
@@ -25,26 +24,17 @@ function AppLayout() {
   const { toggleTheme, isDark } = useTheme();
   const { toggleLanguage, t, language } = useLanguage();
   const { user, logout } = useAuth();
+  const { credits, brand } = useAppData();
   const { success, clearToasts } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [credits, setCredits] = useState(() => mockCredits.getBalance());
   const layoutRef = useRef(null);
 
   // Clear toasts on route change
   useEffect(() => {
     if (clearToasts) clearToasts();
   }, [location.pathname, clearToasts]);
-
-  const brand = mockBrand.getProfile();
-
-  useEffect(() => {
-    setCredits(mockCredits.getBalance());
-    const handleCreditsChanged = (event) => setCredits(event.detail?.balance ?? mockCredits.getBalance());
-    window.addEventListener('finx:credits-changed', handleCreditsChanged);
-    return () => window.removeEventListener('finx:credits-changed', handleCreditsChanged);
-  }, [user?.id]);
 
   const handleLogout = useCallback(async () => {
     await logout();

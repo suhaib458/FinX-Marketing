@@ -7,47 +7,99 @@ on:
 
 permissions:
   contents: read
+  statuses: read
 
 jobs:
   production-smoke:
     runs-on: ubuntu-latest
-    timeout-minutes: 2
+    timeout-minutes: 12
+    env:
+      BASE_URL: https://fin-x-marketing.vercel.app
+      GH_TOKEN: ${{ github.token }}
     steps:
-      - name: Wait for production and verify public runtime
+      - name: Wait for Vercel deployment of this exact commit
         shell: bash
         run: |
           set -euo pipefail
-          BASE_URL="https://fin-x-marketing.vercel.app"
 
-          for attempt in $(seq 1 4); do
+          for attempt in $(seq 1 60); do
+            payload=$(curl -fsS               -H "Authorization: Bearer $GH_TOKEN"               -H "Accept: application/vnd.github+json"               "https://api.github.com/repos/$GITHUB_REPOSITORY/commits/$GITHUB_SHA/status")
+
+            state=$(printf '%s' "$payload" | jq -r '[.statuses[] | select(.context == "Vercel")][0].state // "missing"')
+            echo "Vercel status for $GITHUB_SHA: $state (attempt $attempt/60)"
+
+            if [[ "$state" == "success" ]]; then
+              break
+            fi
+            if [[ "$state" == "failure" || "$state" == "error" ]]; then
+              echo "Vercel deployment failed for this commit."
+              exit 1
+            fi
+            if [[ "$attempt" == "60" ]]; then
+              echo "Timed out waiting for Vercel deployment of this commit."
+              exit 1
+            fi
+            sleep 10
+          done
+
+      - name: Verify production runtime dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          for attempt in $(seq 1 6); do
             root_code=$(curl -L -sS -o /tmp/finx-root -w "%{http_code}" "$BASE_URL/" || true)
             login_code=$(curl -L -sS -o /tmp/finx-login -w "%{http_code}" "$BASE_URL/login" || true)
             live_code=$(curl -L -sS -o /tmp/finx-live -w "%{http_code}" "$BASE_URL/api/v1/health/live" || true)
             ready_code=$(curl -L -sS -o /tmp/finx-ready -w "%{http_code}" "$BASE_URL/api/v1/health/ready" || true)
             version_code=$(curl -L -sS -o /tmp/finx-version -w "%{http_code}" "$BASE_URL/api/v1/version" || true)
             storage_code=$(curl -L -sS -o /tmp/finx-storage -w "%{http_code}" "$BASE_URL/api/v1/health/storage" || true)
+            ai_code=$(curl -L -sS -o /tmp/finx-ai -w "%{http_code}" "$BASE_URL/api/v1/health/ai" || true)
 
-            echo "Attempt $attempt: root=$root_code login=$login_code live=$live_code ready=$ready_code version=$version_code storage=$storage_code"
-            echo "Storage health response:"
-            cat /tmp/finx-storage || true
-            echo
+            echo "Attempt $attempt: root=$root_code login=$login_code live=$live_code ready=$ready_code version=$version_code storage=$storage_code ai=$ai_code"
 
-            if [[ "$root_code" == "200"               && "$login_code" == "200"               && "$live_code" == "200"               && "$ready_code" == "200"               && "$version_code" == "200" ]]               && grep -q '"status":"ok"' /tmp/finx-live               && grep -q '"status":"ready"' /tmp/finx-ready               && grep -q '"database":"connected"' /tmp/finx-ready; then
-              echo "FinX production smoke test passed."
+            if [[ "$root_code" == "200"               && "$login_code" == "200"               && "$live_code" == "200"               && "$ready_code" == "200"               && "$version_code" == "200"               && "$storage_code" == "200"               && "$ai_code" == "200" ]]               && grep -q '"status":"ok"' /tmp/finx-live               && grep -q '"status":"ready"' /tmp/finx-ready               && grep -q '"database":"connected"' /tmp/finx-ready               && grep -q '"status":"ready"' /tmp/finx-storage               && grep -q '"write":"ok"' /tmp/finx-storage               && grep -q '"delete":"ok"' /tmp/finx-storage               && grep -q '"status":"ready"' /tmp/finx-ai               && grep -q '"configured":true' /tmp/finx-ai; then
+              echo "FinX production runtime smoke passed."
               cat /tmp/finx-ready
+              echo
+              cat /tmp/finx-storage
+              echo
+              cat /tmp/finx-ai
               exit 0
             fi
 
             sleep 10
           done
 
-          echo "FinX production smoke test failed after retries."
-          echo "--- live ---"
-          cat /tmp/finx-live || true
-          echo
-          echo "--- ready ---"
-          cat /tmp/finx-ready || true
-          echo
-          echo "--- version ---"
-          cat /tmp/finx-version || true
+          echo "Production runtime verification failed."
+          for file in live ready version storage ai; do
+            echo "--- $file ---"
+            cat "/tmp/finx-$file" || true
+            echo
+          done
           exit 1
+
+  browser-e2e:
+    needs: production-smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      E2E_BASE_URL: https://fin-x-marketing.vercel.app
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: Install Playwright without changing the lockfile
+        run: npm install --no-save --package-lock=false @playwright/test@1.55.0
+
+      - name: Install desktop and mobile browser engines
+        run: npx playwright install --with-deps chromium webkit
+
+      - name: Run production browser E2E
+        run: npx playwright test e2e/public-production.spec.js

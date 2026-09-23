@@ -4,6 +4,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
 import { DEFAULT_CUSTOMER_BRAND_COLORS } from '../constants/brandDefaults';
 import { useAuth } from '../context/AuthContext';
+import { useAppData } from '../context/AppDataContext';
 import { useToast } from '../context/ToastContext';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
@@ -11,7 +12,6 @@ import {
   ArrowRight, ArrowLeft, Building2, Users, Palette, Image as ImageIcon, 
   CheckCircle2, UploadCloud, X, LogOut, Moon, Sun, Languages, SkipForward, Sparkles
 } from 'lucide-react';
-import mockBrand from '../services/mockBrand';
 import { mockStorage } from '../services/mockStorage';
 import { assetApi } from '../services/assetApi';
 import { brandApi } from '../services/brandApi';
@@ -39,6 +39,7 @@ export default function Onboarding() {
   const { t, language, setLanguage } = useLanguage();
   const { theme, toggleTheme } = useTheme();
   const { user, firebaseUser, completeOnboarding, logout } = useAuth();
+  const { brand, setBrand } = useAppData();
   const { success, error } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
@@ -90,13 +91,19 @@ export default function Onboarding() {
 
   // Load only the current user's draft, or the existing profile when editing.
   useEffect(() => {
-    const source = isRestart ? mockBrand.getProfile() : mockStorage.get(DRAFT_KEY, null);
+    const source = isRestart
+      ? (brand ? {
+          ...brand,
+          productDesc: brand.productDescription || '',
+          website: brand.username || brand.website || '',
+        } : null)
+      : mockStorage.get(DRAFT_KEY, null);
     if (source && typeof source === 'object') {
       setFormData((previous) => ({ ...previous, ...source, logo: null, images: [] }));
       setLogoPreview(source.logo || null);
       setImagePreviews(Array.isArray(source.images) ? source.images.slice(0, MAX_PRODUCT_IMAGES) : []);
     }
-  }, [isRestart, user?.id]);
+  }, [brand, isRestart, user?.id]);
 
   // Persist serializable text only. File previews remain session-only.
   useEffect(() => {
@@ -188,7 +195,7 @@ export default function Onboarding() {
         secondaryColor: formData.secondaryColor,
       };
 
-      const localExisting = mockBrand.getProfile();
+      const localExisting = brand;
       let serverBrand;
       if (localExisting?.id) {
         serverBrand = await brandApi.update(firebaseUser, localExisting.id, brandPayload);
@@ -199,12 +206,9 @@ export default function Onboarding() {
           : await brandApi.create(firebaseUser, brandPayload);
       }
 
-      mockBrand.saveProfile({
-        ...formData,
+      setBrand({
         ...serverBrand,
-        id: serverBrand.id,
         productDesc: formData.productDesc.trim(),
-        price: formData.price.trim(),
         website: formData.website.trim(),
         logo: logoPreview || null,
         images: imagePreviews,

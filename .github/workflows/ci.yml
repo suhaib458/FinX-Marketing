@@ -48,8 +48,16 @@ jobs:
       - name: Frontend tests
         run: npm run test:run
 
-      - name: Frontend build
+      - name: Frontend production-mode build
+        env:
+          VITE_AI_MODE: api
         run: npm run build
+
+      - name: Install Playwright test runner
+        run: npm install --no-save --package-lock=false @playwright/test@1.55.0
+
+      - name: Validate Playwright suites
+        run: npx playwright test --list
 
       - name: Prisma validate and generate
         run: |
@@ -64,3 +72,30 @@ jobs:
 
       - name: Validate OpenAPI
         run: npm run backend:openapi
+
+  dependency-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            backend/package-lock.json
+
+      - name: Install locked dependencies
+        run: |
+          npm ci
+          npm --prefix backend ci
+
+      - name: Audit frontend production dependencies
+        run: npm audit --omit=dev --audit-level=high
+
+      - name: Audit backend production dependencies
+        run: npm --prefix backend audit --omit=dev --audit-level=high

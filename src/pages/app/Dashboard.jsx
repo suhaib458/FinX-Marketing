@@ -5,9 +5,8 @@ import {
   ArrowLeft, ArrowRight, FolderOpen, TrendingUp, Plus
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import mockCredits from '../../services/mockCredits';
-import mockGeneration from '../../services/mockGeneration';
-import mockBrand from '../../services/mockBrand';
+import { useAppData } from '../../context/AppDataContext';
+import { TOOL_COSTS } from '../../constants/toolCosts';
 import Button from '../../components/ui/Button';
 
 const toolIcons = {
@@ -89,13 +88,9 @@ function ActivityVisual({ item, result }) {
 function Dashboard() {
   const { t, language } = useLanguage();
   const { user } = useAuth();
+  const { brand, credits, stats, recentContent: activity } = useAppData();
   const navigate = useNavigate();
   const ArrowNav = language === 'ar' ? ArrowLeft : ArrowRight;
-
-  const brand = mockBrand.getProfile();
-  const credits = mockCredits.getBalance();
-  const stats = mockGeneration.getStats();
-  const activity = mockGeneration.getRecentActivity(4);
   const tools = ['socialPost', 'adDesign', 'contentIdeas', 'campaign'];
 
   const businessName = brand?.businessName || '';
@@ -140,7 +135,7 @@ function Dashboard() {
             const Icon = toolIcons[toolKey];
             const color = toolColors[toolKey];
             const tool = t.tools[toolKey];
-            const cost = mockCredits.getCost(toolSlugs[toolKey]);
+            const cost = TOOL_COSTS[toolSlugs[toolKey]] ?? 0;
 
             return (
               <button
@@ -229,7 +224,7 @@ function Dashboard() {
               const toolTranslationKey = item.type === 'social-post' ? 'socialPost'
                 : item.type === 'ad-design' ? 'adDesign'
                 : item.type === 'content-ideas' ? 'contentIdeas' : 'campaign';
-              const result = mockGeneration.getResult(item.id);
+              const result = item;
               return (
                 <button
                   key={item.id}
