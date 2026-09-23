@@ -26,17 +26,19 @@ function publicLocalUrl(storageKey) {
 }
 
 export class FirebaseStorageProvider {
-  constructor({ bucketName, adminApp, logger }) {
+  constructor({ bucketName, adminApp, config, logger }) {
     if (!bucketName) {
       throw new Error('Firebase storage bucket name is required');
     }
     this.mode = 'firebase';
     this.bucketName = bucketName;
     this.adminApp = adminApp;
+    this.config = config;
     this.logger = logger;
   }
 
   getBucket() {
+    if (!this.adminApp) this.adminApp = getOrCreateAdminApp(this.config);
     return getStorage(this.adminApp).bucket(this.bucketName);
   }
 
@@ -199,10 +201,10 @@ export function createStorageProvider({ config, adminApp, logger }) {
     if (!config.firebaseStorageBucket || !config.firebaseProjectId) {
       throw new Error('Firebase storage is not configured');
     }
-    const app = adminApp ?? getOrCreateAdminApp(config);
     return new FirebaseStorageProvider({
       bucketName: config.firebaseStorageBucket,
-      adminApp: app,
+      adminApp,
+      config,
       logger,
     });
   }
