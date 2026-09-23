@@ -34,6 +34,7 @@ const SAFE_ERROR_KEYS = {
   'auth/invalid-email': 'invalidEmail',
   'auth/operation-not-allowed': 'operationUnavailable',
   'auth/account-exists-with-different-credential': 'accountExistsWithDifferentCredential',
+  'auth/unauthorized-domain': 'unauthorizedDomain',
 };
 
 export function safeAuthErrorKey(error) {
@@ -55,6 +56,29 @@ function logFirebaseError(operation, error) {
       code: error?.code,
       message: error?.message,
     });
+  }
+}
+
+function isPrivateNetworkHost(hostname) {
+  if (!hostname) return false;
+  if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '::1') return false;
+  if (/^10\./.test(hostname) || /^192\.168\./.test(hostname)) return true;
+  const match = hostname.match(/^172\.(\d{1,3})\./);
+  if (match) {
+    const second = Number(match[1]);
+    if (second >= 16 && second <= 31) return true;
+  }
+  return hostname.endsWith('.local');
+}
+
+function assertGoogleAuthOrigin() {
+  if (typeof window === 'undefined') return;
+  const { protocol, hostname } = window.location;
+  if (protocol === 'http:' && isPrivateNetworkHost(hostname)) {
+    const error = new Error('Google OAuth cannot complete from an unsecured private-network origin.');
+    error.code = 'auth/unauthorized-domain';
+    error.stage = 'firebase';
+    throw error;
   }
 }
 
@@ -123,6 +147,7 @@ export const firebaseAuthService = {
   async loginWithGoogle() {
     await ready();
     try {
+      assertGoogleAuthOrigin();
       const { user } = await signInWithPopup(firebaseAuth, googleProvider);
       return await refreshUser(user);
     } catch (error) {
