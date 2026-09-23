@@ -1,7 +1,8 @@
-import { useState, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import { useToast } from '../../context/ToastContext';
 import { useAuth } from '../../context/AuthContext';
+import { useAppData } from '../../context/AppDataContext';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   MessageSquare, Palette, Lightbulb, Calendar,
@@ -10,9 +11,8 @@ import {
 } from 'lucide-react';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
-import mockCredits, { TOOL_COSTS } from '../../services/mockCredits';
+import { TOOL_COSTS } from '../../constants/toolCosts';
 import { generateWithCredits } from '../../services/mockGenerationFlow';
-import mockBrand from '../../services/mockBrand';
 import GeneratingScreen from '../../components/ui/GeneratingScreen';
 import { DEFAULT_CUSTOMER_BRAND_COLORS } from '../../constants/brandDefaults';
 import { validateCreateValues } from '../../utils/createValidation';
@@ -166,8 +166,7 @@ function CreateContent() {
   const { tool } = useParams();
   const navigate = useNavigate();
   const { firebaseUser } = useAuth();
-
-  const brand = mockBrand.getProfile();
+  const { credits, brand, applyGenerationResult, isLoading: isAppDataLoading } = useAppData();
   const ArrowNext = language === 'ar' ? ArrowLeft : ArrowRight;
 
   // Shared form state
@@ -205,6 +204,13 @@ function CreateContent() {
   const [campaignProduct, setCampaignProduct] = useState(() => brand?.productService || '');
   const [startDate, setStartDate] = useState('');
 
+  useEffect(() => {
+    if (!brand) return;
+    setTopic((previous) => previous || brand.productService || '');
+    setTargetAudience((previous) => previous || brand.targetAudience || '');
+    setCampaignProduct((previous) => previous || brand.productService || '');
+  }, [brand]);
+
   const updateValue = (field, setter, value) => {
     setter(value);
     setFormErrors((previous) => previous[field] ? { ...previous, [field]: null } : previous);
@@ -224,8 +230,7 @@ function CreateContent() {
 
   const toolData = t.tools[meta.key];
   const cost = TOOL_COSTS[tool];
-  const credits = mockCredits.getBalance();
-  const canAfford = credits >= cost;
+  const canAfford = isAppDataLoading || credits >= cost;
 
   // Platform options
   const platformOptions = [
@@ -366,6 +371,7 @@ function CreateContent() {
       }
 
       const result = await generateWithCredits(tool, params, brandData, { firebaseUser });
+      applyGenerationResult(result);
       success(t.common.saved);
       navigate(`/app/result/${result.id}`);
     } catch (err) {
