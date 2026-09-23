@@ -82,7 +82,7 @@ function Settings() {
             <span>{t.settings.currentPlan}</span>
             <strong>{t.plans[user?.plan || 'free']?.name || t.common.free}</strong>
           </div>
-          <Button variant="outline" size="sm" onClick={() => navigate('/#pricing')}>
+          <Button variant="outline" size="sm" onClick={() => navigate('/app/plans')}>
             {t.settings.upgradePlan}
           </Button>
         </div>

@@ -105,7 +105,7 @@ function AppLayout() {
           <div className="sidebar__credits-bar">
             <div className="sidebar__credits-bar-fill" style={{ width: `${Math.min(credits, 100)}%` }} />
           </div>
-          <button className="sidebar__upgrade-btn" onClick={() => navigate('/app/settings')}>
+          <button className="sidebar__upgrade-btn" onClick={() => navigate('/app/plans')}>
             <Crown size={14} /> {t.settings.upgradePlan}
           </button>
         </div>
