@@ -20,17 +20,26 @@ import { authRoutes } from './routes/auth-routes.js';
 import { protectedRoutes } from './routes/protected-routes.js';
 import { createServices } from './services/index.js';
 
+function startupStage(stage, factory) {
+  try {
+    return factory();
+  } catch (error) {
+    try { error.finxStartupStage ??= stage; } catch {}
+    throw error;
+  }
+}
+
 export function createApp(options = {}) {
-  const config = options.config ?? loadConfig();
-  const logger = options.logger ?? createLogger(config);
-  const database = options.database ?? createDatabase(config);
-  const repositories = options.repositories ?? createRepositories(database.prisma);
-  const storageProvider = options.storageProvider ?? createStorageProvider({ config, logger });
-  const aiProvider = options.aiProvider ?? createXKiroProvider(config, logger);
-  const services = options.services ?? createServices(repositories, { storageProvider, config, logger, aiProvider });
-  const tokenVerifier = options.tokenVerifier ?? createFirebaseTokenVerifier(config);
-  const uploadMiddleware = options.uploadMiddleware ?? createUploadMiddleware(config);
-  const app = express();
+  const config = options.config ?? startupStage('config', () => loadConfig());
+  const logger = options.logger ?? startupStage('logger', () => createLogger(config));
+  const database = options.database ?? startupStage('database', () => createDatabase(config));
+  const repositories = options.repositories ?? startupStage('repositories', () => createRepositories(database.prisma));
+  const storageProvider = options.storageProvider ?? startupStage('storage', () => createStorageProvider({ config, logger }));
+  const aiProvider = options.aiProvider ?? startupStage('ai', () => createXKiroProvider(config, logger));
+  const services = options.services ?? startupStage('services', () => createServices(repositories, { storageProvider, config, logger, aiProvider }));
+  const tokenVerifier = options.tokenVerifier ?? startupStage('auth', () => createFirebaseTokenVerifier(config));
+  const uploadMiddleware = options.uploadMiddleware ?? startupStage('upload', () => createUploadMiddleware(config));
+  const app = startupStage('express', () => express());
 
   app.disable('x-powered-by');
   app.set('trust proxy', config.trustProxy);
