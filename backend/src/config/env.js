@@ -90,9 +90,6 @@ const environmentSchema = z.object({
   if (env.NODE_ENV === 'production' && !env.FIREBASE_STORAGE_BUCKET) {
     context.addIssue({ code: 'custom', path: ['FIREBASE_STORAGE_BUCKET'], message: 'FIREBASE_STORAGE_BUCKET is required in production' });
   }
-  if (env.NODE_ENV === 'production' && !(env.XKIRO_API_KEY || env.GEMINI_API_KEY)) {
-    context.addIssue({ code: 'custom', path: ['XKIRO_API_KEY'], message: 'XKIRO_API_KEY is required in production' });
-  }
   if (env.NODE_ENV === 'production' && env.ALLOW_DEV_AUTH) {
     context.addIssue({ code: 'custom', path: ['ALLOW_DEV_AUTH'], message: 'Development authentication cannot be enabled in production' });
   }
@@ -105,7 +102,14 @@ const environmentSchema = z.object({
 });
 
 export function loadConfig(source = process.env) {
-  const parsed = environmentSchema.safeParse(source);
+  const normalizedSource = {
+    ...source,
+    FIREBASE_PROJECT_ID: source.FIREBASE_PROJECT_ID || source.VITE_FIREBASE_PROJECT_ID,
+    FIREBASE_STORAGE_BUCKET: source.FIREBASE_STORAGE_BUCKET || source.VITE_FIREBASE_STORAGE_BUCKET,
+    TRUST_PROXY: source.TRUST_PROXY ?? (source.VERCEL ? 'true' : undefined),
+  };
+
+  const parsed = environmentSchema.safeParse(normalizedSource);
   if (!parsed.success) {
     const message = parsed.error.issues.map((issue) => `${issue.path.join('.')}: ${issue.message}`).join('; ');
     throw new Error(`Invalid environment configuration: ${message}`);
