@@ -17,13 +17,39 @@ const booleanValue = z.preprocess(
   z.boolean(),
 );
 
+function normalizeOrigin(value) {
+  const trimmed = String(value || '').trim();
+  if (!trimmed) return null;
+  return trimmed.replace(/\/$/, '');
+}
+
+function resolvedCorsOrigins(env) {
+  const origins = new Set(
+    env.CORS_ORIGINS
+      .split(',')
+      .map(normalizeOrigin)
+      .filter(Boolean),
+  );
+
+  for (const host of [env.VERCEL_PROJECT_PRODUCTION_URL, env.VERCEL_URL]) {
+    const normalizedHost = String(host || '').trim().replace(/^https?:\/\//, '').replace(/\/$/, '');
+    if (normalizedHost) origins.add(`https://${normalizedHost}`);
+  }
+
+  return [...origins];
+}
+
 const environmentSchema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   PORT: z.coerce.number().int().min(1).max(65535).default(3001),
   APP_VERSION: z.string().min(1).default('0.1.0'),
   DATABASE_URL: z.string().url().optional(),
   FIREBASE_PROJECT_ID: z.string().trim().min(1).optional(),
+  FIREBASE_SERVICE_ACCOUNT_JSON: z.string().trim().min(2).optional(),
+  GOOGLE_APPLICATION_CREDENTIALS: z.string().trim().min(1).optional(),
   CORS_ORIGINS: z.string().default('http://localhost:5173,http://127.0.0.1:5173'),
+  VERCEL_URL: z.string().trim().min(1).optional(),
+  VERCEL_PROJECT_PRODUCTION_URL: z.string().trim().min(1).optional(),
   ALLOW_DEV_AUTH: booleanValue.default(false),
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']).default('info'),
   TRUST_PROXY: booleanValue.default(false),
@@ -50,6 +76,13 @@ const environmentSchema = z.object({
   if (env.NODE_ENV === 'production' && !env.FIREBASE_PROJECT_ID) {
     context.addIssue({ code: 'custom', path: ['FIREBASE_PROJECT_ID'], message: 'FIREBASE_PROJECT_ID is required in production' });
   }
+  if (env.NODE_ENV === 'production' && !(env.FIREBASE_SERVICE_ACCOUNT_JSON || env.GOOGLE_APPLICATION_CREDENTIALS)) {
+    context.addIssue({
+      code: 'custom',
+      path: ['FIREBASE_SERVICE_ACCOUNT_JSON'],
+      message: 'Firebase Admin credentials are required in production',
+    });
+  }
   if (env.NODE_ENV === 'production' && env.STORAGE_MODE === 'local') {
     context.addIssue({ code: 'custom', path: ['STORAGE_MODE'], message: 'Local storage cannot be used in production' });
   }
@@ -62,10 +95,10 @@ const environmentSchema = z.object({
   if (env.NODE_ENV === 'production' && env.ALLOW_DEV_AUTH) {
     context.addIssue({ code: 'custom', path: ['ALLOW_DEV_AUTH'], message: 'Development authentication cannot be enabled in production' });
   }
-  if (env.NODE_ENV === 'production' && !env.CORS_ORIGINS.trim()) {
+  if (env.NODE_ENV === 'production' && !resolvedCorsOrigins(env).length) {
     context.addIssue({ code: 'custom', path: ['CORS_ORIGINS'], message: 'At least one production CORS origin is required' });
   }
-  if (env.NODE_ENV === 'production' && env.CORS_ORIGINS.split(',').some((origin) => origin.trim() === '*')) {
+  if (env.NODE_ENV === 'production' && resolvedCorsOrigins(env).some((origin) => origin === '*')) {
     context.addIssue({ code: 'custom', path: ['CORS_ORIGINS'], message: 'Wildcard CORS is not allowed in production' });
   }
 });
@@ -84,7 +117,8 @@ export function loadConfig(source = process.env) {
     version: parsed.data.APP_VERSION,
     databaseUrl: parsed.data.DATABASE_URL,
     firebaseProjectId: parsed.data.FIREBASE_PROJECT_ID,
-    corsOrigins: parsed.data.CORS_ORIGINS.split(',').map((origin) => origin.trim()).filter(Boolean),
+    firebaseServiceAccountJson: parsed.data.FIREBASE_SERVICE_ACCOUNT_JSON,
+    corsOrigins: resolvedCorsOrigins(parsed.data),
     allowDevAuth: parsed.data.ALLOW_DEV_AUTH,
     logLevel: parsed.data.LOG_LEVEL,
     trustProxy: parsed.data.TRUST_PROXY,
