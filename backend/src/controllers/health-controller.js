@@ -1,4 +1,6 @@
-export function createHealthController({ config, database, aiProvider }) {
+import { randomUUID } from 'node:crypto';
+
+export function createHealthController({ config, database, aiProvider, storageProvider }) {
   return {
     live(_req, res) { res.json({ status: 'ok' }); },
 
@@ -9,6 +11,34 @@ export function createHealthController({ config, database, aiProvider }) {
         return res.json({ status: 'ready', database: 'connected' });
       } catch {
         return res.status(503).json({ status: 'not_ready', database: 'unavailable' });
+      }
+    },
+
+    async storage(_req, res) {
+      const storageKey = `healthchecks/finx-${randomUUID()}.txt`;
+      try {
+        const uploaded = await storageProvider.upload({
+          storageKey,
+          buffer: Buffer.from('finx-storage-health'),
+          mimeType: 'text/plain',
+          metadata: { purpose: 'healthcheck' },
+        });
+        await storageProvider.delete({ storageKey });
+        return res.json({
+          status: 'ready',
+          storage: storageProvider.mode,
+          bucket: uploaded?.bucket || storageProvider.bucketName || null,
+          write: 'ok',
+          delete: 'ok',
+        });
+      } catch (error) {
+        const code = String(error?.code || error?.errors?.[0]?.reason || 'STORAGE_UNAVAILABLE').slice(0, 80);
+        return res.status(503).json({
+          status: 'not_ready',
+          storage: storageProvider?.mode || null,
+          bucket: storageProvider?.bucketName || null,
+          code,
+        });
       }
     },
 

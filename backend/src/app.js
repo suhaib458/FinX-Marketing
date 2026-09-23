@@ -67,7 +67,7 @@ export function createApp(options = {}) {
     },
   }));
 
-  app.use('/api/v1', healthRoutes(createHealthController({ config, database, aiProvider })));
+  app.use('/api/v1', healthRoutes(createHealthController({ config, database, aiProvider, storageProvider })));
   app.use('/api/v1', authRoutes(services.users, firebaseAuth(tokenVerifier)));
   app.use('/api/v1', protectedRoutes(services, combinedAuth({ config, tokenVerifier, userService: services.users }), { uploadMiddleware }));
   app.use(notFoundHandler);
