@@ -1,5 +1,4 @@
 import express from 'express';
-import { createApp } from './app.js';
 
 function classifyStartup(error) {
   const message = String(error?.message || '');
@@ -15,7 +14,8 @@ let runtime;
 let startupCode = null;
 
 try {
-  runtime = createApp();
+  const appModule = await import('./app.js');
+  runtime = appModule.createApp();
 } catch (error) {
   startupCode = classifyStartup(error);
   console.error('[FINX_STARTUP_ERROR]', startupCode);
@@ -39,10 +39,8 @@ if (!runtime) {
   });
 }
 
-// Vercel's Express runtime consumes the exported app directly.
 export default app;
 
-// Local development keeps using a regular TCP listener.
 if (runtime && !process.env.VERCEL) {
   const { config, database, logger, aiProvider } = runtime;
   const server = app.listen(config.port, () => {
