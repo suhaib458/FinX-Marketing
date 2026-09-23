@@ -71,6 +71,10 @@ jobs:
             sleep 10
           done
 
+          if grep -q '"status":"not_configured"' /tmp/finx-ai 2>/dev/null; then
+            echo "::error title=AI production configuration missing::Set XKIRO_API_KEY in the Vercel Production environment, then redeploy. FinX intentionally remains not-ready until the AI provider is configured."
+          fi
+
           echo "Production runtime verification failed."
           for file in live ready version storage ai; do
             echo "--- $file ---"

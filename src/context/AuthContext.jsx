@@ -8,7 +8,6 @@ import {
   useState,
 } from 'react';
 import { mockStorage } from '../services/mockStorage';
-import mockCredits from '../services/mockCredits';
 import { authApi as defaultAuthApi } from '../services/authApi';
 import { firebaseAuthService as defaultAuthService, safeAuthErrorKey } from '../services/firebaseAuth';
 
@@ -30,11 +29,10 @@ function legacyMockScopeId(email) {
 
 function compatibleUser(appUser) {
   if (!appUser) return null;
-  // Copy existing prototype data once into the authoritative MySQL user scope.
-  // The legacy scope is retained, never used as the active identity, and never deleted.
+  // Keep only non-authoritative legacy local preferences/drafts scoped to the authenticated user.
+  // Credits, brand data and generated content are owned by backend APIs.
   mockStorage.migrateUserScope(legacyMockScopeId(appUser.email), appUser.id);
   mockStorage.setUserId(appUser.id);
-  if (Number.isFinite(appUser.credits)) mockCredits.setBalance(appUser.credits);
   const localProfile = mockStorage.get(PROFILE_KEY, {});
   return {
     ...appUser,
