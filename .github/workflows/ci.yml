@@ -53,6 +53,12 @@ jobs:
           VITE_AI_MODE: api
         run: npm run build
 
+      - name: Install Playwright test runner
+        run: npm install --no-save --package-lock=false @playwright/test@1.55.0
+
+      - name: Validate Playwright suites
+        run: npx playwright test --list
+
       - name: Prisma validate and generate
         run: |
           npm run db:validate
