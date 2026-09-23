@@ -20,6 +20,7 @@ const Library = lazy(() => import('./pages/app/Library'));
 const Analytics = lazy(() => import('./pages/app/Analytics'));
 const Settings = lazy(() => import('./pages/app/Settings'));
 const NotFound = lazy(() => import('./pages/NotFound'));
+const PublicResourcePage = lazy(() => import('./pages/PublicResourcePage'));
 
 // Loading fallback
 function PageLoader() {
@@ -44,6 +45,22 @@ const router = createBrowserRouter([
       {
         path: '/',
         element: <SuspenseWrap><Landing /></SuspenseWrap>,
+      },
+      {
+        path: '/blog',
+        element: <SuspenseWrap><PublicResourcePage type="blog" /></SuspenseWrap>,
+      },
+      {
+        path: '/help',
+        element: <SuspenseWrap><PublicResourcePage type="help" /></SuspenseWrap>,
+      },
+      {
+        path: '/contact',
+        element: <SuspenseWrap><PublicResourcePage type="contact" /></SuspenseWrap>,
+      },
+      {
+        path: '/faq',
+        element: <SuspenseWrap><PublicResourcePage type="faq" /></SuspenseWrap>,
       },
     ],
   },
