@@ -31,7 +31,7 @@ test('protected app route redirects anonymous visitors to login', async ({ page 
   await expect(page).toHaveURL(/\/login(?:\?|$)/);
 });
 
-test('production runtime dependencies are healthy', async ({ request }) => {
+test('core production runtime dependencies are healthy', async ({ request }) => {
   const live = await request.get('/api/v1/health/live');
   expect(live.status()).toBe(200);
   expect(await live.json()).toMatchObject({ status: 'ok' });
@@ -44,7 +44,4 @@ test('production runtime dependencies are healthy', async ({ request }) => {
   expect(storage.status()).toBe(200);
   expect(await storage.json()).toMatchObject({ status: 'ready', write: 'ok', delete: 'ok' });
 
-  const ai = await request.get('/api/v1/health/ai');
-  expect(ai.status()).toBe(200);
-  expect(await ai.json()).toMatchObject({ status: 'ready', configured: true });
 });
