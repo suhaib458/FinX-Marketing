@@ -4,14 +4,39 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="FinX — من الفكرة إلى محتوى جاهز للنشر. منصة محتوى تسويقي بالذكاء الاصطناعي." />
-    <meta name="theme-color" content="#070B18" />
+    <meta name="theme-color" content="#080509" />
     <title>FinX — من الفكرة إلى محتوى جاهز للنشر</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <style>
+      html, body { margin: 0; background: #080509; }
+      #finx-boot-splash {
+        position: fixed; inset: 0; z-index: 999999;
+        display: grid; place-items: center; overflow: hidden;
+        background:
+          radial-gradient(circle at 50% 46%, rgba(222, 72, 166, .13), transparent 24rem),
+          #080509;
+      }
+      #finx-boot-splash::before,
+      #finx-boot-splash::after {
+        content: ""; position: absolute; border-radius: 50%;
+        border: 1px solid rgba(240, 104, 188, .16);
+        box-shadow: 0 0 36px rgba(231, 78, 177, .08);
+      }
+      #finx-boot-splash::before { width: 220px; height: 220px; }
+      #finx-boot-splash::after { width: 300px; height: 300px; opacity: .55; }
+      #finx-boot-mark {
+        position: relative; z-index: 2; color: #f6eaf2;
+        font: 800 34px/1 Arial, sans-serif; letter-spacing: -1.5px;
+        text-shadow: 0 0 24px rgba(234, 91, 181, .12);
+      }
+      #finx-boot-mark span { color: #ed68b0; }
+      @media (min-width: 821px) { #finx-boot-splash { display: none; } }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root"><div id="finx-boot-splash"><div id="finx-boot-mark">Fin<span>X</span></div></div></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
