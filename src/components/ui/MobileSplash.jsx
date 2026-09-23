@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 const SPLASH_SESSION_KEY = 'finx-mobile-splash-seen';
 const MOBILE_MEDIA_QUERY = '(max-width: 820px)';
@@ -21,7 +21,7 @@ export default function MobileSplash() {
   const [leaving, setLeaving] = useState(false);
   const videoRef = useRef(null);
 
-  const finish = () => {
+  const finish = useCallback(() => {
     if (leaving) return;
     setLeaving(true);
 
@@ -32,7 +32,7 @@ export default function MobileSplash() {
     }
 
     window.setTimeout(() => setVisible(false), 260);
-  };
+  }, [leaving]);
 
   useEffect(() => {
     if (!visible) return undefined;
@@ -46,7 +46,7 @@ export default function MobileSplash() {
       window.clearTimeout(fallbackTimer);
       document.body.style.overflow = previousOverflow;
     };
-  }, [visible, leaving]);
+  }, [visible, finish]);
 
   useEffect(() => {
     if (!visible || !videoRef.current) return undefined;
