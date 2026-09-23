@@ -1,0 +1,36 @@
+name: Refresh backend lockfile for Vercel Blob
+
+on:
+  push:
+    branches:
+      - fix/vercel-blob-storage-20260923
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/vercel-blob-storage-20260923
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - name: Refresh package lock
+        run: npm --prefix backend install --package-lock-only --ignore-scripts
+      - name: Commit lockfile if changed
+        shell: bash
+        run: |
+          if git diff --quiet -- backend/package-lock.json; then
+            echo "Lockfile already current."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add backend/package-lock.json
+          git commit -m "Refresh backend lockfile for Vercel Blob"
+          git push origin HEAD:fix/vercel-blob-storage-20260923
