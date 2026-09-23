@@ -7,7 +7,6 @@ import {
   sendPasswordResetEmail,
   signInWithEmailAndPassword,
   signInWithPopup,
-  signInWithRedirect,
   signOut,
   updateProfile,
 } from 'firebase/auth';
@@ -83,14 +82,6 @@ function assertGoogleAuthOrigin() {
   }
 }
 
-function prefersRedirectAuth() {
-  if (typeof navigator === 'undefined') return false;
-  const ua = navigator.userAgent || '';
-  const iOS = /iPad|iPhone|iPod/i.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-  const mobile = /Android|Mobile/i.test(ua);
-  return iOS || mobile;
-}
-
 async function ready() {
   await firebasePersistenceReady;
 }
@@ -158,15 +149,11 @@ export const firebaseAuthService = {
     try {
       assertGoogleAuthOrigin();
 
-      // Firebase recommends a redirect flow on mobile browsers. It avoids
-      // iOS/Safari popup restrictions and returns to the same route after
-      // the Google account picker completes. onAuthStateChanged then
-      // resumes the normal FinX backend-session synchronization.
-      if (prefersRedirectAuth()) {
-        await signInWithRedirect(firebaseAuth, googleProvider);
-        return null;
-      }
-
+      // FinX is hosted on Vercel while Firebase Auth uses a firebaseapp.com
+      // authDomain. Modern Safari blocks the cross-origin storage access
+      // required by signInWithRedirect in that setup, causing the user to
+      // return to the login page without an authenticated session.
+      // Firebase's recommended non-Firebase-hosting alternative is popup auth.
       const { user } = await signInWithPopup(firebaseAuth, googleProvider);
       return await refreshUser(user);
     } catch (error) {
