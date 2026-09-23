@@ -1,15 +1,13 @@
 import { createApp } from './app.js';
 
-let runtime;
-try {
-  runtime = createApp();
-} catch (error) {
-  console.error(error.message);
-  process.exitCode = 1;
-}
+const runtime = createApp();
+const { app, config, database, logger, aiProvider } = runtime;
 
-if (runtime) {
-  const { app, config, database, logger, aiProvider } = runtime;
+// Vercel's Express runtime consumes the exported app directly.
+export default app;
+
+// Local development keeps using a regular TCP listener.
+if (!process.env.VERCEL) {
   const server = app.listen(config.port, () => {
     logger.info({
       port: config.port,
