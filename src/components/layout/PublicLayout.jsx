@@ -1,6 +1,6 @@
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import {
-  Sun, Moon, Globe, Menu, X, Sparkles, Settings, Tag,
+  Sun, Moon, Globe, Menu, X, Sparkles, Settings,
   BookOpen, UserRound, ArrowRight, ChevronDown
 } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
