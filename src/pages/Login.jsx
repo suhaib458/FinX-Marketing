@@ -213,7 +213,7 @@ function Login() {
           <nav aria-label={language === 'ar' ? 'روابط المساعدة' : 'Help links'}>
             <button type="button" onClick={footerAction}>{language === 'ar' ? 'الخصوصية' : 'Privacy'}</button>
             <button type="button" onClick={footerAction}>{language === 'ar' ? 'الشروط' : 'Terms'}</button>
-            <button type="button" onClick={footerAction}>{language === 'ar' ? 'المساعدة' : 'Help'}</button>
+            <button type="button" onClick={() => navigate('/help')}>{language === 'ar' ? 'المساعدة' : 'Help'}</button>
           </nav>
         </footer>
       </section>

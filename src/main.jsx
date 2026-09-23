@@ -4,6 +4,7 @@ import './styles/global.css';
 import './styles/components.css';
 import './styles/layout.css';
 import './styles/landing.css';
+import './styles/resources.css';
 import './styles/auth.css';
 import './styles/onboarding.css';
 import './styles/dashboard.css';
