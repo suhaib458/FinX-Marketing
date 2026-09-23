@@ -19,6 +19,7 @@ const ContentResult = lazy(() => import('./pages/app/ContentResult'));
 const Library = lazy(() => import('./pages/app/Library'));
 const Analytics = lazy(() => import('./pages/app/Analytics'));
 const Settings = lazy(() => import('./pages/app/Settings'));
+const Plans = lazy(() => import('./pages/app/Plans'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 const PublicResourcePage = lazy(() => import('./pages/PublicResourcePage'));
 
@@ -132,6 +133,10 @@ const router = createBrowserRouter([
       {
         path: '/app/settings',
         element: <SuspenseWrap><Settings /></SuspenseWrap>,
+      },
+      {
+        path: '/app/plans',
+        element: <SuspenseWrap><Plans /></SuspenseWrap>,
       },
       {
         path: '/app/*',
