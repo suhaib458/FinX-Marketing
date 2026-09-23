@@ -1488,3 +1488,139 @@
   right: 14px;
   left: auto;
 }
+
+
+/* ─── Premium register alignment ─── */
+.auth-layout--register .auth-content-wrapper--register {
+  max-width: 500px;
+  padding-top: 32px;
+  padding-bottom: 22px;
+}
+
+.auth-layout--register .auth-heading-block--register {
+  margin-bottom: 20px;
+}
+
+.auth-layout--register .auth-divider--premium {
+  margin-block: 18px;
+}
+
+.auth-layout--register .auth-form--register {
+  gap: 13px;
+}
+
+.auth-layout--register .auth-field > div:first-child > span {
+  display: none;
+}
+
+.auth-layout--register .fx-input {
+  min-height: 50px;
+}
+
+.auth-layout--register .auth-password-field .fx-input {
+  padding-right: 48px;
+}
+
+.auth-layout--register .password-toggle--premium {
+  bottom: 12px;
+}
+
+.auth-terms-block {
+  margin-top: 1px;
+}
+
+.auth-terms-row {
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr);
+  align-items: start;
+  gap: 9px;
+  color: #a58c9b;
+  font-family: "Noto Sans Arabic", "Segoe UI", Tahoma, Arial, sans-serif;
+  font-size: .72rem;
+  line-height: 1.75;
+  cursor: pointer;
+}
+
+[dir='ltr'] .auth-terms-row {
+  font-family: var(--font-english);
+}
+
+.auth-terms-row .auth-checkbox {
+  width: 17px;
+  height: 17px;
+  margin: 3px 0 0;
+  accent-color: #e765ac;
+  cursor: pointer;
+}
+
+.auth-terms-row .auth-link--button {
+  display: inline;
+  color: #e36aab;
+  font-size: inherit;
+  font-weight: 750;
+  line-height: inherit;
+  vertical-align: baseline;
+}
+
+.auth-terms-error {
+  margin-top: 5px;
+  color: var(--color-error);
+  font-size: .69rem;
+}
+
+.auth-account-switch--register {
+  margin-top: 17px;
+}
+
+.auth-footer--register > span {
+  unicode-bidi: isolate;
+}
+
+@media (max-width: 900px) {
+  .auth-layout--register .auth-content-wrapper--register {
+    max-width: 520px;
+    padding-top: 32px;
+    padding-bottom: 24px;
+  }
+
+  .auth-layout--register .auth-form--register {
+    gap: 12px;
+  }
+
+  .auth-layout--register .auth-google-button,
+  .auth-layout--register .fx-input,
+  .auth-layout--register .auth-submit-button {
+    min-height: 50px;
+  }
+
+  .auth-layout--register .auth-footer--register {
+    margin-top: 10px;
+  }
+}
+
+@media (max-width: 520px) {
+  .auth-layout--register .auth-content-wrapper--register {
+    padding-top: 28px;
+  }
+
+  .auth-layout--register .auth-heading-block--register {
+    margin-bottom: 17px;
+  }
+
+  .auth-layout--register .auth-divider--premium {
+    margin-block: 15px;
+  }
+
+  .auth-layout--register .auth-title--premium {
+    font-size: 1.78rem;
+  }
+
+  .auth-terms-row {
+    font-size: .69rem;
+    line-height: 1.7;
+  }
+
+  .auth-layout--register .auth-account-switch--register {
+    margin-top: 16px;
+  }
+}
