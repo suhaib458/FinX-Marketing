@@ -58,7 +58,8 @@ const environmentSchema = z.object({
   RATE_LIMIT_MAX: z.coerce.number().int().positive().default(120),
   JSON_BODY_LIMIT: z.string().regex(/^\d+(b|kb|mb)$/i).default('100kb'),
   FIREBASE_STORAGE_BUCKET: z.string().trim().min(1).optional(),
-  STORAGE_MODE: z.enum(['auto', 'local', 'firebase']).default('auto'),
+  BLOB_READ_WRITE_TOKEN: z.string().trim().min(1).optional(),
+  STORAGE_MODE: z.enum(['auto', 'local', 'firebase', 'vercel']).default('auto'),
   LOCAL_UPLOAD_DIR: z.string().trim().min(1).default('.data/uploads'),
   MAX_UPLOAD_SIZE_MB: z.coerce.number().positive().default(25),
   XKIRO_API_KEY: z.string().trim().min(1).optional(),
@@ -87,8 +88,11 @@ const environmentSchema = z.object({
   if (env.NODE_ENV === 'production' && env.STORAGE_MODE === 'local') {
     context.addIssue({ code: 'custom', path: ['STORAGE_MODE'], message: 'Local storage cannot be used in production' });
   }
-  if (env.NODE_ENV === 'production' && !env.FIREBASE_STORAGE_BUCKET) {
-    context.addIssue({ code: 'custom', path: ['FIREBASE_STORAGE_BUCKET'], message: 'FIREBASE_STORAGE_BUCKET is required in production' });
+  if (env.NODE_ENV === 'production' && env.STORAGE_MODE === 'firebase' && !env.FIREBASE_STORAGE_BUCKET) {
+    context.addIssue({ code: 'custom', path: ['FIREBASE_STORAGE_BUCKET'], message: 'FIREBASE_STORAGE_BUCKET is required when Firebase storage is selected' });
+  }
+  if (env.NODE_ENV === 'production' && env.STORAGE_MODE === 'vercel' && !env.BLOB_READ_WRITE_TOKEN) {
+    context.addIssue({ code: 'custom', path: ['BLOB_READ_WRITE_TOKEN'], message: 'BLOB_READ_WRITE_TOKEN is required when Vercel Blob is selected' });
   }
   if (env.NODE_ENV === 'production' && env.ALLOW_DEV_AUTH) {
     context.addIssue({ code: 'custom', path: ['ALLOW_DEV_AUTH'], message: 'Development authentication cannot be enabled in production' });
@@ -132,6 +136,7 @@ export function loadConfig(source = process.env) {
     rateLimitMax: parsed.data.RATE_LIMIT_MAX,
     jsonBodyLimit: parsed.data.JSON_BODY_LIMIT,
     firebaseStorageBucket: parsed.data.FIREBASE_STORAGE_BUCKET,
+    blobReadWriteToken: parsed.data.BLOB_READ_WRITE_TOKEN,
     storageMode: parsed.data.STORAGE_MODE,
     localUploadDir: path.resolve(configDir, '../../', parsed.data.LOCAL_UPLOAD_DIR),
     maxUploadSizeMb: parsed.data.MAX_UPLOAD_SIZE_MB,
