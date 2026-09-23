@@ -1,6 +1,5 @@
 import { useLanguage } from '../context/LanguageContext';
 import { Link, useNavigate } from 'react-router-dom';
-import { useToast } from '../context/ToastContext';
 import {
   MessageSquare,
   Palette,
@@ -195,7 +194,6 @@ function WhyCard({ icon: Icon, title, body, variant = 'purple', children }) {
 function Landing() {
   const { t, language } = useLanguage();
   const navigate = useNavigate();
-  const { info } = useToast();
   const isArabic = language === 'ar';
   const ArrowIcon = isArabic ? ArrowLeft : ArrowRight;
 
@@ -561,8 +559,8 @@ function Landing() {
 
           <div>
             <h3>{copy.legal}</h3>
-            {copy.legalLinks.map((label) => (
-              <button type="button" key={label} onClick={() => info(t.toasts.legalUnavailable)}>{label}</button>
+            {copy.legalLinks.map((label, index) => (
+              <Link key={label} to={['/terms', '/privacy'][index]}>{label}</Link>
             ))}
           </div>
         </div>

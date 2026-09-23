@@ -122,7 +122,7 @@ const ar = {
       invalidEmail: 'البريد الإلكتروني غير صالح.',
       operationUnavailable: 'طريقة تسجيل الدخول هذه غير متاحة حالياً.',
       accountExistsWithDifferentCredential: 'هذا البريد مسجل مسبقاً بطريقة تسجيل دخول أخرى. يرجى تسجيل الدخول بالطريقة الأصلية.',
-      unauthorizedDomain: 'تسجيل Google لا يعمل من رابط الشبكة المحلي غير الآمن مثل 192.168.x.x. افتح نسخة FinX المنشورة عبر HTTPS على الآيفون لاختبار Google، أو أضف نطاق الاختبار إلى Firebase Authorized Domains.',
+      unauthorizedDomain: 'تسجيل Google يحتاج رابط HTTPS معتمد. جرّبه من نسخة FinX المنشورة.',
       unknownError: 'تعذر إكمال تسجيل الدخول. أعد المحاولة.',
     },
   },

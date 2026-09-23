@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { BookOpen, CircleHelp, LifeBuoy, Mail, MessageCircleQuestion, ArrowLeft, ArrowRight } from 'lucide-react';
+import { BookOpen, CircleHelp, LifeBuoy, Mail, MessageCircleQuestion, ArrowLeft, ArrowRight, FileText, ShieldCheck } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 
 const SUPPORT_ISSUES_URL = 'https://github.com/suhaib458/FinX-Marketing/issues/new';
@@ -49,6 +49,32 @@ const content = {
       ticket: 'فتح تذكرة دعم',
       note: 'يتم فتح التذكرة حاليًا عبر مستودع المشروع على GitHub إلى أن يتم ربط قناة الدعم الرسمية داخل FinX.',
     },
+    terms: {
+      icon: FileText,
+      eyebrow: 'قانوني',
+      title: 'الشروط والأحكام',
+      subtitle: 'الشروط الأساسية لاستخدام FinX بطريقة واضحة ومباشرة.',
+      sections: [
+        ['استخدام الخدمة', 'باستخدام FinX فإنك توافق على استخدام المنصة للأغراض المشروعة وعدم إساءة استخدام الخدمات أو محاولة تعطيلها أو الوصول غير المصرح إلى أنظمتها.'],
+        ['الحساب والمسؤولية', 'أنت مسؤول عن صحة بيانات حسابك والمحافظة على وسيلة تسجيل الدخول الخاصة بك. لا تشارك كلمة المرور أو بيانات الوصول مع أطراف غير موثوقة.'],
+        ['المحتوى والذكاء الاصطناعي', 'قد ينشئ FinX محتوى بمساعدة الذكاء الاصطناعي. يجب مراجعة المخرجات قبل النشر، وتبقى مسؤولية استخدامها النهائي وملاءمتها لعلامتك أو نشاطك على المستخدم.'],
+        ['الملكية الفكرية', 'تظل المواد التي ترفعها إلى FinX ملكًا لك أو لأصحاب الحقوق فيها. لا يجوز رفع محتوى لا تملك حق استخدامه.'],
+        ['تغييرات الخدمة', 'قد تتغير بعض خصائص FinX أثناء التطوير، وسنعمل على توضيح أي تغييرات جوهرية تؤثر في طريقة استخدام الخدمة.'],
+      ],
+    },
+    privacy: {
+      icon: ShieldCheck,
+      eyebrow: 'قانوني',
+      title: 'سياسة الخصوصية',
+      subtitle: 'ملخص واضح للبيانات التي يحتاجها FinX وكيف تُستخدم داخل الخدمة.',
+      sections: [
+        ['البيانات التي نجمعها', 'قد نعالج بيانات الحساب مثل الاسم والبريد الإلكتروني، وبيانات نشاطك التي تدخلها داخل FinX، والمحتوى أو الصور التي تختار رفعها لاستخدام ميزات المنصة.'],
+        ['تسجيل الدخول', 'تستخدم FinX خدمة Firebase Authentication لإدارة تسجيل الدخول. عند استخدام Google قد تتم معالجة معلومات الحساب الأساسية اللازمة لإتمام المصادقة.'],
+        ['كيف نستخدم البيانات', 'تستخدم البيانات لتشغيل حسابك، تقديم ميزات إنشاء المحتوى، حفظ إعداداتك ونتائجك، وتحسين موثوقية وأمان الخدمة.'],
+        ['المشاركة والحماية', 'لا نبيع بياناتك. قد تعالج الجهات المزودة للبنية التحتية البيانات بالقدر اللازم لتشغيل الخدمة، مع تطبيق ضوابط الحماية المناسبة.'],
+        ['اختياراتك', 'يمكنك التوقف عن استخدام الخدمة في أي وقت. ومع توسع النسخة الإنتاجية ستتوفر إجراءات أوضح لإدارة بيانات الحساب وطلبات الحذف.'],
+      ],
+    },
     back: 'العودة للرئيسية',
     helpCta: 'مركز الدعم',
     faqCta: 'الأسئلة الشائعة',
@@ -96,6 +122,32 @@ const content = {
       subtitle: 'If you hit a technical issue or have feedback, open a support ticket so it can be tracked properly.',
       ticket: 'Open a support ticket',
       note: 'Tickets currently open through the project repository on GitHub until an official in-app support channel is connected.',
+    },
+    terms: {
+      icon: FileText,
+      eyebrow: 'Legal',
+      title: 'Terms of Service',
+      subtitle: 'The essential terms for using FinX, written in plain language.',
+      sections: [
+        ['Using the service', 'By using FinX, you agree to use the platform lawfully and not misuse, disrupt, or attempt unauthorized access to its systems.'],
+        ['Account responsibility', 'You are responsible for accurate account information and for protecting your sign-in method. Do not share passwords or access details with untrusted parties.'],
+        ['AI-generated content', 'FinX may generate content with AI assistance. Review outputs before publishing; the final decision to use generated material remains yours.'],
+        ['Intellectual property', 'Materials you upload remain yours or belong to their respective rights holders. Do not upload content you do not have permission to use.'],
+        ['Service changes', 'FinX features may evolve during development. Material changes that affect how the service works will be communicated as the product matures.'],
+      ],
+    },
+    privacy: {
+      icon: ShieldCheck,
+      eyebrow: 'Legal',
+      title: 'Privacy Policy',
+      subtitle: 'A clear summary of the information FinX needs and how it is used.',
+      sections: [
+        ['Information we process', 'We may process account details such as your name and email, business information you enter, and content or images you choose to upload for FinX features.'],
+        ['Authentication', 'FinX uses Firebase Authentication for sign-in. When you use Google, basic account information needed to complete authentication may be processed.'],
+        ['How information is used', 'Information is used to operate your account, provide content-generation features, store preferences and results, and improve service reliability and security.'],
+        ['Sharing and protection', 'We do not sell your data. Infrastructure providers may process information only as needed to operate the service, subject to appropriate safeguards.'],
+        ['Your choices', 'You can stop using the service at any time. As the production service expands, clearer account-data management and deletion procedures will be added.'],
+      ],
     },
     back: 'Back to home',
     helpCta: 'Help Center',
@@ -147,6 +199,17 @@ export default function PublicResourcePage({ type }) {
                 <summary>{question}</summary>
                 <p>{answer}</p>
               </details>
+            ))}
+          </div>
+        )}
+
+        {(type === 'terms' || type === 'privacy') && (
+          <div className="resource-legal">
+            {resource.sections.map(([title, body]) => (
+              <article key={title}>
+                <h2>{title}</h2>
+                <p>{body}</p>
+              </article>
             ))}
           </div>
         )}

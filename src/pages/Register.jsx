@@ -24,7 +24,7 @@ function GoogleIcon() {
 function Register() {
   const { t, language } = useLanguage();
   const { register, loginWithGoogle, isLoading } = useAuth();
-  const { success, error, info } = useToast();
+  const { success, error } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -76,10 +76,7 @@ function Register() {
   const handleGoogleRegister = async () => {
     try {
       const user = await loginWithGoogle();
-      if (!user) {
-        navigate('/verify-email', { replace: true, state: { from: location.state?.from } });
-        return;
-      }
+      if (!user) return;
       success(t.toasts.registerSuccess);
       const requested = safeProtectedDestination(requestedPath(location.state?.from));
       navigate(user?.onboarded ? requested : '/onboarding', { replace: true, state: { from: location.state?.from } });
@@ -93,11 +90,6 @@ function Register() {
       }
       error(t.auth.errors[safeAuthErrorKey(authFailure)] || t.auth.errors.unknownError);
     }
-  };
-
-  const showLegalInfo = (event) => {
-    event.preventDefault();
-    info(t.toasts.legalUnavailable);
   };
 
   return (
@@ -224,9 +216,9 @@ function Register() {
                   />
                   <span>
                     {t.auth.termsAgree}{' '}
-                    <button type="button" className="auth-link auth-link--button" onClick={showLegalInfo}>{t.auth.termsLink}</button>
+                    <button type="button" className="auth-link auth-link--button" onClick={(event) => { event.preventDefault(); navigate('/terms'); }}>{t.auth.termsLink}</button>
                     {' '}{t.auth.and}{' '}
-                    <button type="button" className="auth-link auth-link--button" onClick={showLegalInfo}>{t.auth.privacyLink}</button>
+                    <button type="button" className="auth-link auth-link--button" onClick={(event) => { event.preventDefault(); navigate('/privacy'); }}>{t.auth.privacyLink}</button>
                   </span>
                 </label>
                 {formErrors.agreed && <div className="auth-terms-error">{formErrors.agreed}</div>}
@@ -250,8 +242,8 @@ function Register() {
         <footer className="auth-footer auth-footer--premium auth-footer--register">
           <span dir="ltr">© {new Date().getFullYear()} FinX</span>
           <nav aria-label={language === 'ar' ? 'روابط المساعدة' : 'Help links'}>
-            <button type="button" onClick={() => info(t.toasts.legalUnavailable)}>{language === 'ar' ? 'الخصوصية' : 'Privacy'}</button>
-            <button type="button" onClick={() => info(t.toasts.legalUnavailable)}>{language === 'ar' ? 'الشروط' : 'Terms'}</button>
+            <button type="button" onClick={() => navigate('/privacy')}>{language === 'ar' ? 'الخصوصية' : 'Privacy'}</button>
+            <button type="button" onClick={() => navigate('/terms')}>{language === 'ar' ? 'الشروط' : 'Terms'}</button>
             <button type="button" onClick={() => navigate('/help')}>{language === 'ar' ? 'المساعدة' : 'Help'}</button>
           </nav>
         </footer>

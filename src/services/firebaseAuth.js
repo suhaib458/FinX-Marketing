@@ -7,6 +7,7 @@ import {
   sendPasswordResetEmail,
   signInWithEmailAndPassword,
   signInWithPopup,
+  signInWithRedirect,
   signOut,
   updateProfile,
 } from 'firebase/auth';
@@ -75,11 +76,19 @@ function assertGoogleAuthOrigin() {
   if (typeof window === 'undefined') return;
   const { protocol, hostname } = window.location;
   if (protocol === 'http:' && isPrivateNetworkHost(hostname)) {
-    const error = new Error('Google OAuth cannot complete from an unsecured private-network origin.');
+    const error = new Error('Google sign-in requires an authorized HTTPS origin.');
     error.code = 'auth/unauthorized-domain';
     error.stage = 'firebase';
     throw error;
   }
+}
+
+function prefersRedirectAuth() {
+  if (typeof navigator === 'undefined') return false;
+  const ua = navigator.userAgent || '';
+  const iOS = /iPad|iPhone|iPod/i.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const mobile = /Android|Mobile/i.test(ua);
+  return iOS || mobile;
 }
 
 async function ready() {
@@ -148,6 +157,16 @@ export const firebaseAuthService = {
     await ready();
     try {
       assertGoogleAuthOrigin();
+
+      // Firebase recommends a redirect flow on mobile browsers. It avoids
+      // iOS/Safari popup restrictions and returns to the same route after
+      // the Google account picker completes. onAuthStateChanged then
+      // resumes the normal FinX backend-session synchronization.
+      if (prefersRedirectAuth()) {
+        await signInWithRedirect(firebaseAuth, googleProvider);
+        return null;
+      }
+
       const { user } = await signInWithPopup(firebaseAuth, googleProvider);
       return await refreshUser(user);
     } catch (error) {

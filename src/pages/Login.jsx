@@ -23,7 +23,7 @@ function GoogleIcon() {
 function Login() {
   const { t, language } = useLanguage();
   const { login, loginWithGoogle, isLoading } = useAuth();
-  const { success, error, info } = useToast();
+  const { success, error } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -76,10 +76,7 @@ function Login() {
   const handleGoogleLogin = async () => {
     try {
       const user = await loginWithGoogle();
-      if (!user) {
-        navigate('/verify-email', { replace: true, state: { from: location.state?.from } });
-        return;
-      }
+      if (!user) return;
       success(t.toasts.loginSuccess);
       const requested = safeProtectedDestination(requestedPath(location.state?.from));
       if (user.onboarded) {
@@ -98,8 +95,6 @@ function Login() {
       error(t.auth.errors[safeAuthErrorKey(authFailure)] || t.auth.errors.unknownError);
     }
   };
-
-  const footerAction = () => info(t.toasts.featureUnavailable);
 
   return (
     <div className="auth-layout auth-layout--login">
@@ -211,8 +206,8 @@ function Login() {
         <footer className="auth-footer auth-footer--premium">
           <span dir="ltr">© {new Date().getFullYear()} FinX</span>
           <nav aria-label={language === 'ar' ? 'روابط المساعدة' : 'Help links'}>
-            <button type="button" onClick={footerAction}>{language === 'ar' ? 'الخصوصية' : 'Privacy'}</button>
-            <button type="button" onClick={footerAction}>{language === 'ar' ? 'الشروط' : 'Terms'}</button>
+            <button type="button" onClick={() => navigate('/privacy')}>{language === 'ar' ? 'الخصوصية' : 'Privacy'}</button>
+            <button type="button" onClick={() => navigate('/terms')}>{language === 'ar' ? 'الشروط' : 'Terms'}</button>
             <button type="button" onClick={() => navigate('/help')}>{language === 'ar' ? 'المساعدة' : 'Help'}</button>
           </nav>
         </footer>
