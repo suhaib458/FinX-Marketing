@@ -16,7 +16,7 @@ function PublicLayout() {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const { clearToasts, info } = useToast();
+  const { clearToasts } = useToast();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const isLandingPage = location.pathname === '/';
@@ -89,7 +89,7 @@ function PublicLayout() {
                 <button
                   type="button"
                   className="landing-nav-link"
-                  onClick={() => info(t.toasts.featureUnavailable)}
+                  onClick={() => navigate('/blog')}
                 >
                   <span>{language === 'ar' ? 'المدونة' : 'Blog'}</span>
                   <BookOpen size={15} />
@@ -206,8 +206,8 @@ function PublicLayout() {
                 type="button"
                 className="landing-mobile-menu__link"
                 onClick={() => {
-                  info(t.toasts.featureUnavailable);
                   setMobileMenuOpen(false);
+                  navigate('/blog');
                 }}
               >
                 <BookOpen size={16} />
