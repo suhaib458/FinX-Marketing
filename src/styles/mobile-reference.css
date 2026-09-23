@@ -615,7 +615,7 @@
     justify-self: center;
     width: 64px;
     height: 64px;
-    margin-top: -18px;
+    margin-top: -7px;
     display: grid;
     place-items: center;
     color: #fff9fc;
@@ -769,7 +769,7 @@
   .bottom-nav__create-fab {
     width: 60px;
     height: 60px;
-    margin-top: -16px;
+    margin-top: -6px;
   }
 }
 
