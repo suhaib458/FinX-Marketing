@@ -55,7 +55,7 @@ See `PROJECT_AUDIT.md` for the current migration status and remaining production
 
 ## Production deployment
 
-- Frontend and API: Vercel
+- Frontend and API: Vercel (`https://fin-x-marketing.vercel.app`)
 - Production database: Aiven MySQL
 - Authentication and asset storage: Firebase
 - Production database migrations run with `prisma migrate deploy` during Vercel production builds.
