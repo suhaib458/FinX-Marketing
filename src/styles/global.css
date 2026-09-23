@@ -266,19 +266,88 @@ select {
   width: 100vw;
   height: 100dvh;
   overflow: hidden;
-  background: #050405;
+  opacity: 1;
+  background:
+    radial-gradient(circle at 50% 46%, rgba(222, 72, 166, .14), transparent 24rem),
+    #080509;
+  transition: opacity 260ms ease;
+}
+
+.mobile-splash--leaving {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.mobile-splash__fallback {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+}
+
+.mobile-splash__rings {
+  position: absolute;
+  width: min(72vw, 300px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  border: 1px solid rgba(239, 103, 188, .16);
+  box-shadow:
+    0 0 38px rgba(229, 70, 169, .08),
+    inset 0 0 34px rgba(137, 52, 169, .06);
+}
+
+.mobile-splash__rings::before,
+.mobile-splash__rings::after {
+  content: '';
+  position: absolute;
+  border-radius: inherit;
+  border: 1px solid rgba(238, 102, 186, .10);
+}
+
+.mobile-splash__rings::before {
+  inset: 12%;
+}
+
+.mobile-splash__rings::after {
+  inset: -16%;
+  opacity: .6;
+}
+
+.mobile-splash__brand {
+  position: relative;
+  z-index: 2;
+  color: #f6eaf2;
+  font-family: var(--font-english);
+  font-size: clamp(2rem, 9vw, 2.65rem);
+  font-weight: 850;
+  letter-spacing: -.055em;
+  text-shadow: 0 0 26px rgba(234, 91, 181, .14);
+}
+
+.mobile-splash__brand > span {
+  color: #ed68b0;
 }
 
 .mobile-splash__video {
+  position: relative;
+  z-index: 3;
   width: 100%;
   height: 100%;
   max-width: none;
   object-fit: cover;
   object-position: center;
+  opacity: 0;
+  background: transparent;
+  transition: opacity 180ms ease;
+}
+
+.mobile-splash__video--ready {
+  opacity: 1;
 }
 
 @media (min-width: 821px) {
   .mobile-splash {
     display: none;
   }
+}
 }
