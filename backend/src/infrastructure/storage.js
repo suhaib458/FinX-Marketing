@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { getDownloadURL, getStorage } from 'firebase-admin/storage';
+import { del as deleteBlob, head as headBlob, put as putBlob } from '@vercel/blob';
 import { getOrCreateAdminApp } from './firebase-admin.js';
 
 function safeLocalPath(rootDir, storageKey) {
@@ -23,6 +24,51 @@ function publicLocalUrl(storageKey) {
     .map((segment) => encodeURIComponent(segment))
     .join('/');
   return `/api/v1/uploads/${encoded}`;
+}
+
+export class VercelBlobStorageProvider {
+  constructor({ token, logger }) {
+    if (!token) throw new Error('Vercel Blob read-write token is required');
+    this.mode = 'vercel';
+    this.bucketName = 'vercel-blob';
+    this.token = token;
+    this.logger = logger;
+  }
+
+  async upload({ storageKey, buffer, mimeType }) {
+    const blob = await putBlob(storageKey, buffer, {
+      access: 'public',
+      contentType: mimeType,
+      token: this.token,
+      addRandomSuffix: false,
+      allowOverwrite: false,
+    });
+
+    return {
+      storageKey: blob.pathname,
+      publicUrl: blob.url,
+      bucket: this.bucketName,
+    };
+  }
+
+  async delete({ storageKey }) {
+    try {
+      await deleteBlob(storageKey, { token: this.token });
+      return true;
+    } catch (error) {
+      this.logger?.warn?.({ err: error, storageKey }, 'Failed to delete file from Vercel Blob');
+      return false;
+    }
+  }
+
+  async getAccessUrl({ storageKey }) {
+    try {
+      const blob = await headBlob(storageKey, { token: this.token });
+      return blob?.url || null;
+    } catch {
+      return null;
+    }
+  }
 }
 
 export class FirebaseStorageProvider {
@@ -193,6 +239,19 @@ export function createStorageProvider({ config, adminApp, logger }) {
   if (storageMode === 'local' || (storageMode === 'auto' && !config.isProduction)) {
     return new LocalDiskStorageProvider({
       rootDir: config.localUploadDir,
+      logger,
+    });
+  }
+
+  // When a Vercel Blob store is connected to the production project, prefer it
+  // automatically. This keeps uploads on the same platform as the app and avoids
+  // Firebase Storage billing/bucket requirements.
+  if (
+    storageMode === 'vercel'
+    || (config.isProduction && config.blobReadWriteToken)
+  ) {
+    return new VercelBlobStorageProvider({
+      token: config.blobReadWriteToken,
       logger,
     });
   }
