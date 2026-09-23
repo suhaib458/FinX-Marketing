@@ -11,7 +11,7 @@ permissions:
 jobs:
   production-smoke:
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 2
     steps:
       - name: Wait for production and verify public runtime
         shell: bash
@@ -19,7 +19,7 @@ jobs:
           set -euo pipefail
           BASE_URL="https://fin-x-marketing.vercel.app"
 
-          for attempt in $(seq 1 36); do
+          for attempt in $(seq 1 4); do
             root_code=$(curl -L -sS -o /tmp/finx-root -w "%{http_code}" "$BASE_URL/" || true)
             login_code=$(curl -L -sS -o /tmp/finx-login -w "%{http_code}" "$BASE_URL/login" || true)
             live_code=$(curl -L -sS -o /tmp/finx-live -w "%{http_code}" "$BASE_URL/api/v1/health/live" || true)
