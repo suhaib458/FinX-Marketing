@@ -1,0 +1,49 @@
+name: FinX Production Smoke
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  production-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - name: Wait for production and verify public runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE_URL="https://fin-x-marketing.vercel.app"
+
+          for attempt in $(seq 1 36); do
+            root_code=$(curl -L -sS -o /tmp/finx-root -w "%{http_code}" "$BASE_URL/" || true)
+            login_code=$(curl -L -sS -o /tmp/finx-login -w "%{http_code}" "$BASE_URL/login" || true)
+            live_code=$(curl -L -sS -o /tmp/finx-live -w "%{http_code}" "$BASE_URL/api/v1/health/live" || true)
+            ready_code=$(curl -L -sS -o /tmp/finx-ready -w "%{http_code}" "$BASE_URL/api/v1/health/ready" || true)
+            version_code=$(curl -L -sS -o /tmp/finx-version -w "%{http_code}" "$BASE_URL/api/v1/version" || true)
+
+            echo "Attempt $attempt: root=$root_code login=$login_code live=$live_code ready=$ready_code version=$version_code"
+
+            if [[ "$root_code" == "200"               && "$login_code" == "200"               && "$live_code" == "200"               && "$ready_code" == "200"               && "$version_code" == "200" ]]               && grep -q '"status":"ok"' /tmp/finx-live               && grep -q '"status":"ready"' /tmp/finx-ready               && grep -q '"database":"connected"' /tmp/finx-ready; then
+              echo "FinX production smoke test passed."
+              cat /tmp/finx-ready
+              exit 0
+            fi
+
+            sleep 10
+          done
+
+          echo "FinX production smoke test failed after retries."
+          echo "--- live ---"
+          cat /tmp/finx-live || true
+          echo
+          echo "--- ready ---"
+          cat /tmp/finx-ready || true
+          echo
+          echo "--- version ---"
+          cat /tmp/finx-version || true
+          exit 1
