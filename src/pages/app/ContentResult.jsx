@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../../context/LanguageContext';
 import { useToast } from '../../context/ToastContext';
 import { useAuth } from '../../context/AuthContext';
+import { useAppData } from '../../context/AppDataContext';
 import {
   MessageSquare, Palette, Lightbulb, Calendar,
   Copy, Download, Save, ArrowLeft, ArrowRight,
@@ -38,6 +39,7 @@ function ContentResult() {
   const { t, language } = useLanguage();
   const { success, error: toastError } = useToast();
   const { firebaseUser } = useAuth();
+  const { applyGenerationResult, updateContentItem } = useAppData();
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -54,12 +56,18 @@ function ContentResult() {
 
   useEffect(() => {
     let cancelled = false;
-    const cached = mockGeneration.getResult(id);
-    if (cached) {
-      setResult(cached);
-      setEditedContent(cached.content);
-      setSelectedTone(cached.tone || 'professional');
+
+    if (import.meta.env.VITE_AI_MODE === 'mock') {
+      const cached = mockGeneration.getResult(id);
+      if (cached) {
+        setResult(cached);
+        setEditedContent(cached.content || {});
+        setSelectedTone(cached.tone || 'professional');
+      }
+      setLoading(false);
+      return () => { cancelled = true; };
     }
+
     (async () => {
       try {
         const data = await contentApi.get(firebaseUser, id);
@@ -67,9 +75,8 @@ function ContentResult() {
         setResult(data);
         setEditedContent(data.content || {});
         setSelectedTone(data.tone || 'professional');
-        mockGeneration.saveExternalResult(data);
       } catch {
-        // Cached result remains available for transient network failures.
+        if (!cancelled) setResult(null);
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -96,13 +103,13 @@ function ContentResult() {
     if (!result) return;
     try {
       const updated = await contentApi.update(firebaseUser, result.id, { content: editedContent, saved: true });
-      mockGeneration.updateResult(result.id, { content: updated.content, saved: true, savedAt: updated.savedAt });
+      updateContentItem(result.id, { ...updated, content: updated.content, saved: true });
       success(t.toasts.savedToLibrary);
       setResult(prev => ({ ...prev, ...updated, content: updated.content, saved: true }));
     } catch (err) {
       toastError(err.message || t.toasts.errorOccurred);
     }
-  }, [editedContent, firebaseUser, result, success, t, toastError]);
+  }, [editedContent, firebaseUser, result, success, t, toastError, updateContentItem]);
 
   const handleDownloadDesign = useCallback(() => {
     if (!result || result.type !== 'ad-design') return;
@@ -144,11 +151,7 @@ function ContentResult() {
   }, [result, editedContent, success, t]);
 
   const updateField = (field, value) => {
-    setEditedContent((previous) => {
-      const content = { ...previous, [field]: value };
-      mockGeneration.updateResult(result.id, { content });
-      return content;
-    });
+    setEditedContent((previous) => ({ ...previous, [field]: value }));
   };
 
   const handleGenerateVariation = () => {
@@ -172,6 +175,7 @@ function ContentResult() {
         tone: selectedTone,
         length: selectedLength,
       }, { firebaseUser });
+      applyGenerationResult(variation);
       success(t.toasts.variationSuccess);
       navigate(`/app/result/${variation.id}`);
     } catch (err) {
