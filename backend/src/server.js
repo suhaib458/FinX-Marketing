@@ -1,13 +1,50 @@
+import express from 'express';
 import { createApp } from './app.js';
 
-const runtime = createApp();
-const { app, config, database, logger, aiProvider } = runtime;
+function classifyStartup(error) {
+  const message = String(error?.message || '');
+  if (message.includes('Invalid environment configuration')) return 'ENV_CONFIGURATION';
+  if (message.includes('not valid JSON')) return 'SERVICE_ACCOUNT_JSON';
+  if (/firebase/i.test(message)) return 'FIREBASE_INITIALIZATION';
+  if (/prisma|mariadb|database/i.test(message)) return 'DATABASE_INITIALIZATION';
+  if (/ssl|tls|certificate/i.test(message)) return 'DATABASE_TLS';
+  return 'UNKNOWN_STARTUP';
+}
+
+let runtime;
+let startupCode = null;
+
+try {
+  runtime = createApp();
+} catch (error) {
+  startupCode = classifyStartup(error);
+  console.error('[FINX_STARTUP_ERROR]', startupCode);
+}
+
+const app = runtime?.app ?? express();
+
+if (!runtime) {
+  app.disable('x-powered-by');
+  app.get('/api/v1/health/live', (_req, res) => {
+    res.status(503).json({ status: 'startup_error', code: startupCode });
+  });
+  app.get('/api/v1/health/ready', (_req, res) => {
+    res.status(503).json({ status: 'not_ready', code: startupCode });
+  });
+  app.get('/api/v1/version', (_req, res) => {
+    res.status(503).json({ status: 'startup_error', code: startupCode });
+  });
+  app.use((_req, res) => {
+    res.status(503).json({ error: { code: startupCode, message: 'Backend initialization failed' } });
+  });
+}
 
 // Vercel's Express runtime consumes the exported app directly.
 export default app;
 
 // Local development keeps using a regular TCP listener.
-if (!process.env.VERCEL) {
+if (runtime && !process.env.VERCEL) {
+  const { config, database, logger, aiProvider } = runtime;
   const server = app.listen(config.port, () => {
     logger.info({
       port: config.port,
