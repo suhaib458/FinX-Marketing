@@ -1,8 +1,8 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import {
-  LayoutDashboard, PlusCircle, FolderOpen, BarChart3, Settings,
-  Sun, Moon, Globe, Menu, LogOut, Zap, Crown
+  LayoutDashboard, PlusCircle, Plus, FolderOpen, BarChart3, Settings,
+  Sun, Moon, Globe, Menu, LogOut, Zap, Crown, Search, Sparkles
 } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import { useLanguage } from '../../context/LanguageContext';
@@ -19,6 +19,8 @@ const navItems = [
   { key: 'analytics', path: '/app/analytics', icon: BarChart3 },
   { key: 'settings', path: '/app/settings', icon: Settings },
 ];
+
+const mobileNavItems = navItems.filter((item) => item.key !== 'create');
 
 function AppLayout() {
   const { toggleTheme, isDark } = useTheme();
@@ -123,6 +125,16 @@ function AppLayout() {
 
       {/* Topbar */}
       <header className="app-topbar">
+        <div className="app-topbar__mobile-identity">
+          <span className="app-topbar__mobile-mark" aria-hidden="true">
+            <Sparkles size={22} strokeWidth={1.8} />
+          </span>
+          <span className="app-topbar__mobile-name">{user?.name || 'FinX'}</span>
+          <span className="app-topbar__mobile-plan">
+            {t.plans[user?.plan || 'free']?.name || t.common.free}
+          </span>
+        </div>
+
         <div className="app-topbar__start">
           <Button
             variant="ghost"
@@ -146,8 +158,19 @@ function AppLayout() {
             variant="ghost"
             isIconOnly
             size="sm"
+            icon={Search}
+            onClick={() => navigate('/app/library')}
+            className="app-topbar__search-btn"
+            aria-label={t.nav.library}
+            title={t.nav.library}
+          />
+          <Button
+            variant="ghost"
+            isIconOnly
+            size="sm"
             icon={isDark ? Sun : Moon}
             onClick={toggleTheme}
+            className="app-topbar__theme-btn"
             aria-label={t.theme.toggle}
             title={t.theme.toggle}
           />
@@ -156,6 +179,7 @@ function AppLayout() {
             size="sm"
             icon={Globe}
             onClick={toggleLanguage}
+            className="app-topbar__language-btn"
             aria-label={t.language.toggle}
             title={t.language.toggle}
           >
@@ -167,6 +191,7 @@ function AppLayout() {
             size="sm"
             icon={LogOut}
             onClick={handleLogout}
+            className="app-topbar__logout-btn"
             aria-label={t.nav.logout}
             title={t.nav.logout}
           />
@@ -181,25 +206,43 @@ function AppLayout() {
       {/* Bottom Navigation (Mobile) */}
       <nav className="bottom-nav" role="navigation" aria-label="Mobile navigation">
         <div className="bottom-nav__items">
-          {navItems.map((item) => {
+          {mobileNavItems.slice(0, 2).map((item) => {
             const isActive = item.end
               ? location.pathname === item.path
               : location.pathname.startsWith(item.path);
-            const isCreate = item.key === 'create';
 
             return (
               <NavLink
                 key={item.key}
                 to={item.path}
-                className={`bottom-nav__item ${isActive ? 'bottom-nav__item--active' : ''} ${isCreate ? 'bottom-nav__item--create' : ''}`}
+                end={item.end}
+                className={`bottom-nav__item ${isActive ? 'bottom-nav__item--active' : ''}`}
               >
-                {isCreate ? (
-                  <div className="bottom-nav__item-icon-wrap">
-                    <item.icon size={20} />
-                  </div>
-                ) : (
-                  <item.icon className="bottom-nav__item-icon" size={20} />
-                )}
+                <item.icon className="bottom-nav__item-icon" size={21} />
+                <span className="bottom-nav__item-label">{t.nav[item.key]}</span>
+              </NavLink>
+            );
+          })}
+
+          <NavLink
+            to="/app/create"
+            className="bottom-nav__create-fab"
+            aria-label={t.nav.create}
+            title={t.nav.create}
+          >
+            <Plus size={29} strokeWidth={2} />
+          </NavLink>
+
+          {mobileNavItems.slice(2).map((item) => {
+            const isActive = location.pathname.startsWith(item.path);
+
+            return (
+              <NavLink
+                key={item.key}
+                to={item.path}
+                className={`bottom-nav__item ${isActive ? 'bottom-nav__item--active' : ''}`}
+              >
+                <item.icon className="bottom-nav__item-icon" size={21} />
                 <span className="bottom-nav__item-label">{t.nav[item.key]}</span>
               </NavLink>
             );
