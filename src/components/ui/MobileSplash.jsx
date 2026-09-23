@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 const SPLASH_SESSION_KEY = 'finx-mobile-splash-seen';
 const MOBILE_MEDIA_QUERY = '(max-width: 820px)';
 const MAX_SPLASH_MS = 5_200;
+const SPLASH_ASSET_VERSION = '2026-09-23-v2';
 
 function shouldShowMobileSplash() {
   if (typeof window === 'undefined') return false;
@@ -76,7 +77,7 @@ export default function MobileSplash() {
       <video
         ref={videoRef}
         className={`mobile-splash__video ${videoReady ? 'mobile-splash__video--ready' : ''}`}
-        src="/finx-splash-mobile.mp4"
+        src={`/finx-splash-mobile.mp4?v=${SPLASH_ASSET_VERSION}`}
         autoPlay
         muted
         playsInline
