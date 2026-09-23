@@ -1,7 +1,24 @@
-import { applicationDefault, getApps, initializeApp } from 'firebase-admin/app';
+import { applicationDefault, cert, getApps, initializeApp } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 
 let adminApp;
+
+function firebaseCredential(config) {
+  if (!config.firebaseServiceAccountJson) return applicationDefault();
+
+  let serviceAccount;
+  try {
+    serviceAccount = JSON.parse(config.firebaseServiceAccountJson);
+  } catch {
+    throw new Error('FIREBASE_SERVICE_ACCOUNT_JSON is not valid JSON');
+  }
+
+  if (serviceAccount?.private_key && typeof serviceAccount.private_key === 'string') {
+    serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+  }
+
+  return cert(serviceAccount);
+}
 
 export function getOrCreateAdminApp(config) {
   if (!config.firebaseProjectId) {
@@ -9,7 +26,7 @@ export function getOrCreateAdminApp(config) {
   }
   if (!adminApp) {
     adminApp = getApps()[0] ?? initializeApp({
-      credential: applicationDefault(),
+      credential: firebaseCredential(config),
       projectId: config.firebaseProjectId,
       storageBucket: config.firebaseStorageBucket,
     });
