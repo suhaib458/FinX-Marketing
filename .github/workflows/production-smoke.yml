@@ -81,6 +81,7 @@ jobs:
 
   browser-e2e:
     needs: production-smoke
+    if: always() && needs.production-smoke.result != 'cancelled'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
