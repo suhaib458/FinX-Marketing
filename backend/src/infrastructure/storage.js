@@ -1,3 +1,4 @@
+// Production storage: Vercel Blob when BLOB_READ_WRITE_TOKEN is available.
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { getDownloadURL, getStorage } from 'firebase-admin/storage';
