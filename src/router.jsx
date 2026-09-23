@@ -62,6 +62,14 @@ const router = createBrowserRouter([
         path: '/faq',
         element: <SuspenseWrap><PublicResourcePage type="faq" /></SuspenseWrap>,
       },
+      {
+        path: '/terms',
+        element: <SuspenseWrap><PublicResourcePage type="terms" /></SuspenseWrap>,
+      },
+      {
+        path: '/privacy',
+        element: <SuspenseWrap><PublicResourcePage type="privacy" /></SuspenseWrap>,
+      },
     ],
   },
   
