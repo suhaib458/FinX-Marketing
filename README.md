@@ -52,3 +52,10 @@ Mobile screens up to 820px show `public/finx-splash-mobile.mp4` once per browser
 Never commit `.env` files, Firebase Admin JSON, service-account files, or private keys. The repository `.gitignore` already excludes these files.
 
 See `PROJECT_AUDIT.md` for the current migration status and remaining production work.
+
+## Production deployment
+
+- Frontend and API: Vercel
+- Production database: Aiven MySQL
+- Authentication and asset storage: Firebase
+- Production database migrations run with `prisma migrate deploy` during Vercel production builds.
