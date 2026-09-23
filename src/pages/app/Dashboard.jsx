@@ -103,8 +103,9 @@ function Dashboard() {
         <div className="dash-welcome__content">
           <div className="dash-welcome__text">
             <h1 className="dash-welcome__title">
-              {t.dashboard.greeting}، {user?.name || ''}
-              <Sparkles size={24} className="dash-welcome__sparkle" />
+              <Sparkles size={25} className="dash-welcome__sparkle dash-welcome__sparkle--lead" />
+              <span className="dash-welcome__greeting">{t.dashboard.greeting}،</span>
+              <span className="dash-welcome__name">{user?.name || ''}</span>
             </h1>
             {businessName && (
               <p className="dash-welcome__business">{businessName}</p>
@@ -112,7 +113,7 @@ function Dashboard() {
             <p className="dash-welcome__subtitle">{t.dashboard.subtitle}</p>
           </div>
           <div className="dash-welcome__actions">
-            <Button variant="primary" size="lg" onClick={() => navigate('/app/create')}>
+            <Button variant="primary" size="lg" className="dash-create-primary" onClick={() => navigate('/app/create')}>
               <Plus size={18} />
               {t.dashboard.createNew}
             </Button>
