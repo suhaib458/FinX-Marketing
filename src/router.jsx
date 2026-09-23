@@ -24,8 +24,10 @@ const NotFound = lazy(() => import('./pages/NotFound'));
 // Loading fallback
 function PageLoader() {
   return (
-    <div className="flex-center" style={{ minHeight: '60vh' }}>
-      <div className="fx-spinner fx-spinner--lg" />
+    <div className="route-loader" role="status" aria-label="Loading FinX">
+      <div className="route-loader__orb" aria-hidden="true" />
+      <div className="route-loader__mark" lang="en">Fin<span>X</span></div>
+      <div className="route-loader__line" aria-hidden="true"><i /></div>
     </div>
   );
 }
