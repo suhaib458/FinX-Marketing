@@ -209,7 +209,7 @@ function Login() {
         </div>
 
         <footer className="auth-footer auth-footer--premium">
-          <span>© {new Date().getFullYear()} FinX. {language === 'ar' ? 'جميع الحقوق محفوظة.' : 'All rights reserved.'}</span>
+          <span dir="ltr">© {new Date().getFullYear()} FinX</span>
           <nav aria-label={language === 'ar' ? 'روابط المساعدة' : 'Help links'}>
             <button type="button" onClick={footerAction}>{language === 'ar' ? 'الخصوصية' : 'Privacy'}</button>
             <button type="button" onClick={footerAction}>{language === 'ar' ? 'الشروط' : 'Terms'}</button>
