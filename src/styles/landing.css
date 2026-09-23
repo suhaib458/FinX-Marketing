@@ -4444,3 +4444,94 @@
     box-shadow: 0 9px 24px rgba(226, 71, 158, .22);
   }
 }
+
+
+/* ─── Mobile polish from real iPhone walkthrough ─── */
+@media (max-width: 768px) {
+  .public-layout__header--landing.public-layout__header--scrolled {
+    padding-top: 4px;
+  }
+
+  .public-layout__header--landing.public-layout__header--scrolled .landing-nav-shell {
+    width: calc(100vw - 24px);
+    min-height: 46px;
+    padding: 5px 8px 5px 11px;
+    border-radius: 13px;
+    box-shadow:
+      0 12px 30px rgba(0,0,0,.48),
+      0 0 18px rgba(228, 78, 176, .08),
+      inset 0 1px 0 rgba(255,255,255,.03);
+  }
+
+  .public-layout__header--landing.public-layout__header--scrolled .brand-logo__wordmark {
+    font-size: 1.06rem;
+  }
+
+  .public-layout__header--landing.public-layout__header--scrolled .show-on-mobile .fx-btn {
+    width: 32px;
+    height: 32px;
+    min-height: 32px;
+    border-radius: 9px;
+  }
+
+  .landing-why-card h3,
+  .landing-tool-card__copy h3,
+  .landing-audience-card h3 {
+    font-size: 1rem;
+  }
+
+  .landing-why-card p,
+  .landing-tool-card__copy p,
+  .landing-audience-card p {
+    color: #a18a98;
+    font-size: .78rem !important;
+    line-height: 1.78;
+  }
+
+  .landing-tool-preview {
+    min-height: 154px !important;
+    margin-top: 16px;
+  }
+
+  .landing-tool-preview--design > span {
+    font-size: 1.08rem;
+  }
+
+  .landing-tool-preview--ideas span,
+  .landing-idea-tags span {
+    font-size: .64rem;
+  }
+
+  .landing-platforms > div > span {
+    color: #c4adbb;
+    background: rgba(239, 103, 181, .035);
+    border-color: rgba(241, 124, 194, .10);
+  }
+
+  .landing-platforms > div > span svg,
+  .landing-platforms > div > span .landing-platform-letter {
+    opacity: .95;
+  }
+
+  .landing-workflow-preview {
+    box-shadow:
+      0 20px 44px rgba(0,0,0,.28),
+      0 0 28px rgba(210, 61, 166, .045),
+      inset 0 1px 0 rgba(255,255,255,.025);
+  }
+
+  .landing-workflow-preview__form > strong {
+    color: #eadbe4;
+    font-size: .78rem;
+  }
+
+  .landing-workflow-preview__form label {
+    color: #927b89;
+    font-size: .66rem;
+  }
+
+  .landing-workflow-preview__poster {
+    width: 154px;
+    height: 168px;
+  }
+}
