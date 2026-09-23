@@ -1,7 +1,7 @@
 import { useLanguage } from '../../context/LanguageContext';
 import { useAuth } from '../../context/AuthContext';
 import {
-  MessageSquare, Palette, Lightbulb, Calendar, Sparkles, Zap,
+  MessageSquare, Palette, Lightbulb, Calendar, Zap,
   ArrowLeft, ArrowRight, FolderOpen, TrendingUp, Plus
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -103,7 +103,6 @@ function Dashboard() {
         <div className="dash-welcome__content">
           <div className="dash-welcome__text">
             <h1 className="dash-welcome__title">
-              <Sparkles size={25} className="dash-welcome__sparkle dash-welcome__sparkle--lead" />
               <span className="dash-welcome__greeting">{t.dashboard.greeting}،</span>
               <span className="dash-welcome__name">{user?.name || ''}</span>
             </h1>
@@ -248,7 +247,6 @@ function Dashboard() {
           </div>
         ) : (
           <div className="dash-empty-activity">
-            <Sparkles size={32} className="dash-empty-activity__icon" />
             <p>{t.dashboard.noActivity}</p>
             <Button variant="primary" size="sm" onClick={() => navigate('/app/create')}>
               {t.dashboard.createFirst}

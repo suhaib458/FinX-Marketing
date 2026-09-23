@@ -3,7 +3,7 @@ import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
 import {
-  Sun, Moon, Globe, Palette, LogOut, Crown, Pencil, Sparkles
+  Sun, Moon, Globe, Palette, LogOut, Crown, Pencil
 } from 'lucide-react';
 import Button from '../../components/ui/Button';
 import Avatar from '../../components/ui/Avatar';
@@ -50,7 +50,6 @@ function Settings() {
           <h1>{t.settings.title}</h1>
           <p>{copy.accountSubtitle}</p>
         </div>
-        <div className="settings-header-orb" aria-hidden="true"><Sparkles size={18} /></div>
       </header>
 
       <section className="settings-premium-section">

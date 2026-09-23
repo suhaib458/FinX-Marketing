@@ -124,7 +124,7 @@
 
   .app-topbar__mobile-name {
     min-width: 0;
-    max-width: clamp(90px, 28vw, 150px);
+    max-width: clamp(125px, 38vw, 210px);
     overflow: hidden;
     color: var(--color-text);
     font-family: var(--font-english);
@@ -264,7 +264,7 @@
 
   .dash-welcome__business {
     margin-bottom: 5px;
-    padding-inline-start: 34px;
+    padding-inline-start: 0;
     color: #df86b5;
     font-size: .91rem;
     font-weight: 650;
@@ -698,7 +698,7 @@
   }
 
   .app-topbar__mobile-name {
-    max-width: 102px;
+    max-width: 135px;
     font-size: .86rem;
   }
 
@@ -728,7 +728,7 @@
 
   .dash-welcome__business,
   .dash-welcome__subtitle {
-    padding-inline-start: 31px;
+    padding-inline-start: 0;
   }
 
   .dash-tools__grid {
@@ -779,7 +779,7 @@
   }
 
   .app-topbar__mobile-name {
-    max-width: 84px;
+    max-width: 110px;
   }
 
   .dash-tool-card__desc {

@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard, PlusCircle, Plus, FolderOpen, BarChart3, Settings,
-  Sun, Moon, Globe, Menu, LogOut, Zap, Crown, Search, Sparkles
+  Sun, Moon, Globe, Menu, LogOut, Zap, Crown
 } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import { useLanguage } from '../../context/LanguageContext';
@@ -126,9 +126,6 @@ function AppLayout() {
       {/* Topbar */}
       <header className="app-topbar">
         <div className="app-topbar__mobile-identity">
-          <span className="app-topbar__mobile-mark" aria-hidden="true">
-            <Sparkles size={22} strokeWidth={1.8} />
-          </span>
           <span className="app-topbar__mobile-name">{user?.name || 'FinX'}</span>
           <span className="app-topbar__mobile-plan">
             {t.plans[user?.plan || 'free']?.name || t.common.free}
@@ -154,16 +151,6 @@ function AppLayout() {
             <Zap size={14} />
             <span>{credits}</span>
           </div>
-          <Button
-            variant="ghost"
-            isIconOnly
-            size="sm"
-            icon={Search}
-            onClick={() => navigate('/app/library')}
-            className="app-topbar__search-btn"
-            aria-label={t.nav.library}
-            title={t.nav.library}
-          />
           <Button
             variant="ghost"
             isIconOnly
