@@ -122,7 +122,7 @@ const en = {
       invalidEmail: 'The email address is invalid.',
       operationUnavailable: 'This sign-in method is currently unavailable.',
       accountExistsWithDifferentCredential: 'An account already exists with this email using a different sign-in method. Please sign in using the original method.',
-      unauthorizedDomain: 'Google sign-in cannot run from an unsecured LAN address such as 192.168.x.x. Open the deployed FinX HTTPS URL on your phone, or authorize the test domain in Firebase Authentication.',
+      unauthorizedDomain: 'Google sign-in needs an authorized HTTPS address. Use the deployed FinX version.',
       unknownError: 'Sign-in could not be completed. Please try again.',
     },
   },
