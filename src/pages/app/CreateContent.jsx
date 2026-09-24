@@ -6,7 +6,7 @@ import { useAppData } from '../../context/AppDataContext';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
   MessageSquare, Palette, Lightbulb, Calendar,
-  Zap, ArrowLeft, ArrowRight,
+  Zap, ArrowLeft, ArrowRight, ArrowUp, ChevronDown,
   UploadCloud, X, ToggleLeft, ToggleRight
 } from 'lucide-react';
 import Button from '../../components/ui/Button';
@@ -25,13 +25,6 @@ const toolMeta = {
   'ad-design': { key: 'adDesign', icon: Palette, color: 'var(--tool-ad)' },
   'content-ideas': { key: 'contentIdeas', icon: Lightbulb, color: 'var(--tool-ideas)' },
   'campaign': { key: 'campaign', icon: Calendar, color: 'var(--tool-campaign)' },
-};
-
-const toolRoutes = {
-  'social-post': '/app/create/social-post',
-  'ad-design': '/app/create/ad-design',
-  'content-ideas': '/app/create/content-ideas',
-  'campaign': '/app/create/campaign',
 };
 
 // Instagram inline SVG
@@ -112,49 +105,230 @@ function Toggle({ checked, onChange, label }) {
 
 
 
-// ─── Tool Selector ───
-function ToolSelector({ t, navigate }) {
-  const tools = Object.entries(toolMeta);
+// ─── Smart Create Composer ───
+const SMART_MODE_OPTIONS = ['auto', 'social-post', 'ad-design', 'content-ideas', 'campaign'];
+
+function inferToolFromPrompt(value) {
+  const text = String(value || '').trim().toLowerCase();
+
+  if (/(حملة|حملات|اسبوع|أسبوع|7\s*(أيام|ايام)|campaign|weekly|7\s*days?)/i.test(text)) {
+    return 'campaign';
+  }
+
+  if (/(أفكار|افكار|اقتراحات|مواضيع|زوايا محتوى|content ideas?|ideas?|topics?)/i.test(text)) {
+    return 'content-ideas';
+  }
+
+  if (/(تصميم|اعلان|إعلان|بوستر|بانر|صورة اعلان|صورة إعلان|ad design|advert|poster|banner|creative)/i.test(text)) {
+    return 'ad-design';
+  }
+
+  return 'social-post';
+}
+
+function smartParamsFor(tool, prompt, language, brand) {
+  const shared = {
+    platform: 'instagram',
+    goal: 'engagement',
+    contentLanguage: language,
+    userPrompt: prompt,
+  };
+
+  if (tool === 'ad-design') {
+    return {
+      ...shared,
+      headline: '',
+      offerDescription: prompt,
+      cta: '',
+      designSize: 'square',
+      productImage: null,
+      showLogo: true,
+      useBrandColors: true,
+    };
+  }
+
+  if (tool === 'content-ideas') {
+    return {
+      ...shared,
+      topic: prompt,
+      targetAudience: brand?.targetAudience || (language === 'ar' ? 'جمهور العلامة التجارية' : 'the brand target audience'),
+    };
+  }
+
+  if (tool === 'campaign') {
+    return {
+      ...shared,
+      objective: prompt,
+      product: brand?.productService || prompt,
+      startDate: '',
+      tone: 'professional',
+    };
+  }
+
+  return {
+    ...shared,
+    postType: 'promotional',
+    tone: 'professional',
+    description: prompt,
+    ctaPreference: '',
+  };
+}
+
+function SmartCreateHub({
+  t,
+  language,
+  firebaseUser,
+  credits,
+  brand,
+  applyGenerationResult,
+  isAppDataLoading,
+  success,
+  toastError,
+  navigate,
+}) {
+  const [prompt, setPrompt] = useState('');
+  const [mode, setMode] = useState('auto');
+  const [isGenerating, setIsGenerating] = useState(false);
+  const submittingRef = useRef(false);
+
+  const cleanPrompt = prompt.trim();
+  const resolvedTool = mode === 'auto' ? inferToolFromPrompt(cleanPrompt) : mode;
+  const meta = toolMeta[resolvedTool] || toolMeta['social-post'];
+  const toolData = t.tools[meta.key];
+  const cost = TOOL_COSTS[resolvedTool] ?? 0;
+  const canAfford = isAppDataLoading || credits >= cost;
+
+  const copy = language === 'ar'
+    ? {
+        title: 'ماذا تريد أن تنشئ؟',
+        subtitle: 'اكتب فكرتك بكلمات بسيطة، وFinX يتولى الباقي.',
+        placeholder: 'مثلاً: أنشئ منشور إنستغرام لإطلاق مشروب قهوة جديد بأسلوب فاخر...',
+        auto: 'تلقائي',
+        send: 'إنشاء',
+        hint: 'Enter للإرسال · Shift + Enter لسطر جديد',
+        empty: 'اكتب فكرتك أولاً.',
+        mode: 'نوع المحتوى',
+      }
+    : {
+        title: 'What do you want to create?',
+        subtitle: 'Describe it in your own words — FinX will handle the rest.',
+        placeholder: 'For example: Create an Instagram post for a premium new coffee launch...',
+        auto: 'Auto',
+        send: 'Create',
+        hint: 'Enter to send · Shift + Enter for a new line',
+        empty: 'Describe what you want to create first.',
+        mode: 'Content type',
+      };
+
+  const modeLabel = (value) => {
+    if (value === 'auto') return copy.auto;
+    const modeMeta = toolMeta[value];
+    return modeMeta ? t.tools[modeMeta.key].title : value;
+  };
+
+  const handleSubmit = async () => {
+    if (!cleanPrompt) {
+      toastError(copy.empty);
+      return;
+    }
+
+    if (!canAfford) {
+      toastError(t.generation.insufficientCredits);
+      return;
+    }
+
+    if (isGenerating || submittingRef.current) return;
+
+    submittingRef.current = true;
+    setIsGenerating(true);
+
+    try {
+      const params = smartParamsFor(resolvedTool, cleanPrompt, language, brand);
+      const result = await generateWithCredits(resolvedTool, params, brand || null, { firebaseUser });
+      applyGenerationResult(result);
+      success(t.common.saved);
+      navigate(`/app/result/${result.id}`);
+    } catch (err) {
+      toastError(aiErrorMessage(err, language, t.toasts.errorOccurred));
+    } finally {
+      submittingRef.current = false;
+      setIsGenerating(false);
+    }
+  };
+
+  const handleKeyDown = (event) => {
+    if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent?.isComposing) {
+      event.preventDefault();
+      handleSubmit();
+    }
+  };
+
+  if (isGenerating) {
+    return <GeneratingScreen language={language} icon={meta.icon} color={meta.color} />;
+  }
+
+  const ActiveIcon = meta.icon;
+
   return (
-    <div className="page-enter">
-      <h1 className="create-page-title">{t.nav.create}</h1>
-      <p className="create-page-subtitle">{t.dashboard.subtitle}</p>
-      <div className="create-tools-grid">
-        {tools.map(([slug, meta]) => {
-          const Icon = meta.icon;
-          const toolData = t.tools[meta.key];
-          const cost = TOOL_COSTS[slug];
-          return (
+    <div className="page-enter smart-create">
+      <div className="smart-create__ambient smart-create__ambient--one" aria-hidden="true" />
+      <div className="smart-create__ambient smart-create__ambient--two" aria-hidden="true" />
+
+      <section className="smart-create__stage">
+        <header className="smart-create__header">
+          <h1>{copy.title}</h1>
+          <p>{copy.subtitle}</p>
+        </header>
+
+        <div className="smart-create__composer">
+          <textarea
+            className="smart-create__textarea"
+            value={prompt}
+            onChange={(event) => setPrompt(event.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder={copy.placeholder}
+            rows={5}
+            autoFocus
+            aria-label={copy.title}
+          />
+
+          <div className="smart-create__toolbar">
+            <div className="smart-create__toolbar-start">
+              <label className="smart-create__mode">
+                <ActiveIcon size={15} aria-hidden="true" />
+                <select
+                  value={mode}
+                  onChange={(event) => setMode(event.target.value)}
+                  aria-label={copy.mode}
+                >
+                  {SMART_MODE_OPTIONS.map((value) => (
+                    <option key={value} value={value}>{modeLabel(value)}</option>
+                  ))}
+                </select>
+                <ChevronDown size={14} aria-hidden="true" />
+              </label>
+
+              <span className="smart-create__resolved">
+                <span>{toolData.title}</span>
+                <span className="smart-create__cost"><Zap size={12} /> {cost}</span>
+              </span>
+            </div>
+
             <button
-              key={slug}
-              className="dash-tool-card fx-card fx-card--interactive"
-              onClick={() => navigate(toolRoutes[slug])}
-              style={{ '--tool-color': meta.color }}
+              type="button"
+              className="smart-create__submit"
+              onClick={handleSubmit}
+              disabled={!cleanPrompt || !canAfford || isGenerating}
+              aria-label={copy.send}
+              title={copy.send}
             >
-              <div className="dash-tool-card__header">
-                <div className="dash-tool-card__icon-wrap" style={{ background: `color-mix(in srgb, ${meta.color} 14%, transparent)` }}>
-                  <Icon size={24} style={{ color: meta.color }} />
-                </div>
-                <div className="dash-tool-card__visual" style={{ background: `linear-gradient(135deg, color-mix(in srgb, ${meta.color} 14%, transparent), transparent)` }}>
-                  <Icon size={16} style={{ color: meta.color, opacity: 0.5 }} />
-                </div>
-              </div>
-              <div className="dash-tool-card__body">
-                <h3 className="dash-tool-card__title">{toolData.title}</h3>
-                <p className="dash-tool-card__desc">{toolData.description}</p>
-              </div>
-              <div className="dash-tool-card__footer">
-                <span className="dash-tool-card__cost">
-                  <Zap size={12} /> {cost} {t.dashboard.creditUnit}
-                </span>
-                <span className="dash-tool-card__action">
-                  {t.dashboard.createNew} {t.dir === 'rtl' ? <ArrowLeft size={14} /> : <ArrowRight size={14} />}
-                </span>
-              </div>
+              <ArrowUp size={21} />
             </button>
-          );
-        })}
-      </div>
+          </div>
+        </div>
+
+        <p className="smart-create__hint">{copy.hint}</p>
+      </section>
     </div>
   );
 }
@@ -216,7 +390,22 @@ function CreateContent() {
     setFormErrors((previous) => previous[field] ? { ...previous, [field]: null } : previous);
   };
 
-  if (!tool) return <ToolSelector t={t} navigate={navigate} />;
+  if (!tool) {
+    return (
+      <SmartCreateHub
+        t={t}
+        language={language}
+        firebaseUser={firebaseUser}
+        credits={credits}
+        brand={brand}
+        applyGenerationResult={applyGenerationResult}
+        isAppDataLoading={isAppDataLoading}
+        success={success}
+        toastError={toastError}
+        navigate={navigate}
+      />
+    );
+  }
 
   const meta = toolMeta[tool];
   if (!meta) {
