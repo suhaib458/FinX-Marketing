@@ -94,14 +94,22 @@ export function AuthProvider({
     const promise = apiClient.syncSession(nextFirebaseUser)
       .then(({ user: synchronizedUser }) => applyAppUser(synchronizedUser))
       .catch((error) => {
-        clearAppSession();
         if (error?.code === EMAIL_NOT_VERIFIED_CODE) {
+          clearAppSession();
           // Backend confirmed email is not verified.
           // Keep firebaseUser alive so the user can resend/refresh.
           setEmailNotVerified(true);
           setAuthError(null);
           return null;
         }
+
+        // Do not make a temporary backend/database outage look like a logout.
+        // Keep an already-synchronized app session for retryable 5xx/network failures.
+        // Explicit client/auth failures still clear the app session.
+        const retryableSessionFailure = error?.name === 'TypeError'
+          || error?.code === 'REQUEST_TIMEOUT'
+          || Number(error?.status || 0) >= 500;
+        if (!retryableSessionFailure) clearAppSession();
         if (typeof import.meta !== 'undefined' && import.meta.env?.DEV) {
           console.error('[AUTH_ERROR_STAGE=session] Session synchronization error:', error);
         }
