@@ -1,12 +1,13 @@
 function safeDatabaseDiagnostic(error) {
   const adapterCause = error?.meta?.driverAdapterError?.cause;
   const codeCandidates = [
-    error?.code,
-    error?.errno,
-    error?.cause?.code,
-    error?.cause?.errno,
     adapterCause?.originalCode,
     adapterCause?.code,
+    error?.meta?.code,
+    error?.cause?.code,
+    error?.cause?.errno,
+    error?.errno,
+    error?.code,
   ];
   const kindCandidates = [
     adapterCause?.kind,
