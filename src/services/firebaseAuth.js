@@ -47,6 +47,9 @@ export function safeAuthErrorKey(error) {
   if (error?.code === 'INVALID_AUTH_TOKEN' || error?.code === 'SESSION_REQUIRED') {
     return 'invalidCredentials';
   }
+  if (error?.code === 'REQUEST_TIMEOUT' || Number(error?.status || 0) >= 500) {
+    return 'networkError';
+  }
   return SAFE_ERROR_KEYS[error?.code] || 'unknownError';
 }
 

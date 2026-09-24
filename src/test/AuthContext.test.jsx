@@ -282,6 +282,25 @@ describe('AuthContext Firebase session lifecycle', () => {
     expect(current().authError.status).toBe(500);
   });
 
+  it('preserves an existing app session when backend sync temporarily returns 500', async () => {
+    const auth = createAuthService(firebaseUser);
+    const serverError = new ApiError(503, 'SERVICE_UNAVAILABLE', 'Database unavailable');
+    const apiClient = {
+      syncSession: vi.fn()
+        .mockResolvedValueOnce({ user: mysqlUser })
+        .mockRejectedValueOnce(serverError),
+    };
+    const current = renderAuth(auth.service, apiClient);
+    await waitFor(() => expect(current().user?.id).toBe('mysql-user-id'));
+
+    await auth.emit(firebaseUser);
+    await waitFor(() => expect(current().authError?.status).toBe(503));
+
+    expect(current().isAuthenticated).toBe(true);
+    expect(current().hasAppSession).toBe(true);
+    expect(current().user?.id).toBe('mysql-user-id');
+  });
+
   it('handles network error (TypeError) on Google login gracefully', async () => {
     const auth = createAuthService(null);
     const networkError = new TypeError('Failed to fetch');
