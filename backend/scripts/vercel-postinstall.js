@@ -9,8 +9,6 @@ function run(args) {
   if (result.status !== 0) process.exit(result.status ?? 1);
 }
 
+// Build installs must stay deterministic and must not depend on a live database.
+// Database migrations are deployed explicitly outside Vercel's dependency-install step.
 run(['prisma', 'generate']);
-
-if (process.env.VERCEL_ENV === 'production' && process.env.DATABASE_URL) {
-  run(['prisma', 'migrate', 'deploy']);
-}
