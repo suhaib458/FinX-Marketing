@@ -27,13 +27,6 @@ const toolMeta = {
   'campaign': { key: 'campaign', icon: Calendar, color: 'var(--tool-campaign)' },
 };
 
-const toolRoutes = {
-  'social-post': '/app/create/social-post',
-  'ad-design': '/app/create/ad-design',
-  'content-ideas': '/app/create/content-ideas',
-  'campaign': '/app/create/campaign',
-};
-
 // Instagram inline SVG
 function InstagramIcon({ size = 20, ...props }) {
   return (
