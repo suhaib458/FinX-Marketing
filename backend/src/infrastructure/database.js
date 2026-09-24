@@ -29,7 +29,14 @@ function adapterOptions(databaseUrl, allowPublicKeyRetrieval, databaseCaCert) {
     user: decodeURIComponent(url.username),
     password: decodeURIComponent(url.password),
     database: decodeURIComponent(url.pathname.slice(1)),
-    connectionLimit: 10,
+    // Vercel can spin up many serverless instances; each instance owns its own pool.
+    // Keep the per-instance pool intentionally tiny so a burst of functions cannot
+    // exhaust the database connection limit. Release idle connections quickly too.
+    connectionLimit: process.env.VERCEL ? 1 : 10,
+    minimumIdle: process.env.VERCEL ? 0 : undefined,
+    idleTimeout: process.env.VERCEL ? 30 : 300,
+    connectTimeout: 5_000,
+    acquireTimeout: 10_000,
     allowPublicKeyRetrieval,
     ...(ssl ? { ssl } : {}),
   };
