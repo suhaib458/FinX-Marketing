@@ -1,3 +1,31 @@
+function safeDatabaseDiagnostic(error) {
+  const adapterCause = error?.meta?.driverAdapterError?.cause;
+  const codeCandidates = [
+    error?.code,
+    error?.errno,
+    error?.cause?.code,
+    error?.cause?.errno,
+    adapterCause?.originalCode,
+    adapterCause?.code,
+  ];
+  const kindCandidates = [
+    adapterCause?.kind,
+    error?.cause?.name,
+    error?.name,
+  ];
+
+  const sanitize = (value, fallback) => {
+    const text = String(value || '').trim();
+    if (!text) return fallback;
+    return text.replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 80) || fallback;
+  };
+
+  return {
+    code: sanitize(codeCandidates.find(Boolean), 'DATABASE_UNAVAILABLE'),
+    kind: sanitize(kindCandidates.find(Boolean), 'DatabaseError'),
+  };
+}
+
 import { randomUUID } from 'node:crypto';
 
 export function createHealthController({ config, database, aiProvider, storageProvider }) {
@@ -9,8 +37,12 @@ export function createHealthController({ config, database, aiProvider, storagePr
         const connected = await database.checkConnection();
         if (!connected) return res.status(503).json({ status: 'not_ready', database: 'unavailable' });
         return res.json({ status: 'ready', database: 'connected' });
-      } catch {
-        return res.status(503).json({ status: 'not_ready', database: 'unavailable' });
+      } catch (error) {
+        return res.status(503).json({
+          status: 'not_ready',
+          database: 'unavailable',
+          ...safeDatabaseDiagnostic(error),
+        });
       }
     },
 
