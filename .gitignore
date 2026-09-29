@@ -54,3 +54,4 @@ Desktop.ini
 *.njsproj
 *.sln
 *.sw?
+.vercel
