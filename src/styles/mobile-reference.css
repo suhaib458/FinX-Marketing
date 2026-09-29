@@ -540,7 +540,7 @@
     position: relative;
     z-index: 2;
     display: grid;
-    grid-template-columns: 1fr 1fr 68px 1fr 1fr;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     align-items: stretch;
     justify-content: initial;
     height: 100%;
@@ -763,7 +763,7 @@
   }
 
   .bottom-nav__items {
-    grid-template-columns: 1fr 1fr 64px 1fr 1fr;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
   .bottom-nav__create-fab {
