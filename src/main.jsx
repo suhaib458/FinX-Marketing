@@ -7,7 +7,6 @@ import './styles/landing.css';
 import './styles/resources.css';
 import './styles/auth.css';
 import './styles/onboarding.css';
-import './styles/dashboard.css';
 import './styles/create.css';
 import './styles/smart-create.css';
 import './styles/premium-reference.css';

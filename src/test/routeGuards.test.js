@@ -19,7 +19,8 @@ describe('route guard decisions', () => {
     expect(requestedPath({ pathname: '/app/library', search: '?saved=true', hash: '#item' }))
       .toBe('/app/library?saved=true#item');
     expect(safeProtectedDestination('/app/library?saved=true')).toBe('/app/library?saved=true');
-    expect(safeProtectedDestination('https://attacker.example')).toBe('/app');
-    expect(safeProtectedDestination('/login')).toBe('/app');
+    expect(requestedPath()).toBe('/app/create');
+    expect(safeProtectedDestination('https://attacker.example')).toBe('/app/create');
+    expect(safeProtectedDestination('/login')).toBe('/app/create');
   });
 });

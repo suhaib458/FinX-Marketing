@@ -1,4 +1,4 @@
-import { createBrowserRouter } from 'react-router-dom';
+import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
 import PublicLayout from './components/layout/PublicLayout';
 import AppLayout from './components/layout/AppLayout';
@@ -13,7 +13,6 @@ const Register = lazy(() => import('./pages/Register'));
 const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
 const VerifyEmail = lazy(() => import('./pages/VerifyEmail'));
 const Onboarding = lazy(() => import('./pages/Onboarding'));
-const Dashboard = lazy(() => import('./pages/app/Dashboard'));
 const CreateContent = lazy(() => import('./pages/app/CreateContent'));
 const ContentResult = lazy(() => import('./pages/app/ContentResult'));
 const Library = lazy(() => import('./pages/app/Library'));
@@ -112,7 +111,12 @@ const router = createBrowserRouter([
     children: [
       {
         path: '/app',
-        element: <SuspenseWrap><Dashboard /></SuspenseWrap>,
+        element: <Navigate to="/app/create" replace />,
+      },
+      // Keep old Dashboard links working while making Create the app home.
+      {
+        path: '/app/dashboard/*',
+        element: <Navigate to="/app/create" replace />,
       },
       {
         path: '/app/create/:tool?',

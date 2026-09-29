@@ -205,8 +205,8 @@ function ContentResult() {
       <div className="page-enter fx-empty-state" style={{ minHeight: '40vh' }}>
         <h2 className="fx-empty-state__title">{t.results.notFound}</h2>
         <p className="fx-empty-state__description">{t.results.notFoundDesc}</p>
-        <Button variant="primary" onClick={() => navigate('/app')}>
-          <Home size={16} /> {t.results.backToDashboard}
+        <Button variant="primary" onClick={() => navigate('/app/create')}>
+          <Home size={16} /> {t.results.backToCreate}
         </Button>
       </div>
     );
@@ -513,8 +513,8 @@ function ContentResult() {
       {/* Result Header */}
       <div className="result-header">
         <div className="result-header__start">
-          <Button variant="ghost" size="sm" onClick={() => navigate('/app')}>
-            <ArrowBack size={16} /> {t.results.backToDashboard}
+          <Button variant="ghost" size="sm" onClick={() => navigate('/app/create')}>
+            <ArrowBack size={16} /> {t.results.backToCreate}
           </Button>
         </div>
         <div className="result-header__info">
@@ -528,7 +528,7 @@ function ContentResult() {
               <span>·</span>
               <span>{new Date(result.createdAt).toLocaleDateString(language === 'ar' ? 'ar-JO' : 'en-US')}</span>
               <span>·</span>
-              <span><Zap size={12} /> {result.creditCost} {t.dashboard.creditUnit}</span>
+              <span><Zap size={12} /> {result.creditCost} {t.common.creditUnit}</span>
               {result.businessName && (
                 <>
                   <span>·</span>
@@ -584,7 +584,7 @@ function ContentResult() {
         }
       >
         <p>
-          {t.toasts.variationConfirm} <strong>{result?.creditCost} {t.dashboard.creditUnit}</strong>.
+          {t.toasts.variationConfirm} <strong>{result?.creditCost} {t.common.creditUnit}</strong>.
         </p>
       </Modal>
     </div>

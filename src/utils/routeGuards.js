@@ -23,10 +23,10 @@ export function getOnboardingRouteDecision({ isAuthenticated, emailNotVerified =
 }
 
 export function requestedPath(location) {
-  if (!location) return '/app';
-  return `${location.pathname || ''}${location.search || ''}${location.hash || ''}` || '/app';
+  if (!location) return '/app/create';
+  return `${location.pathname || ''}${location.search || ''}${location.hash || ''}` || '/app/create';
 }
 
 export function safeProtectedDestination(value) {
-  return typeof value === 'string' && value.startsWith('/app') ? value : '/app';
+  return typeof value === 'string' && value.startsWith('/app') ? value : '/app/create';
 }

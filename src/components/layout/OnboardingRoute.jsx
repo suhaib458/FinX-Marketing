@@ -15,7 +15,7 @@ function OnboardingRoute({ children }) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
   if (decision === 'app') {
-    return <Navigate to="/app" replace />;
+    return <Navigate to="/app/create" replace />;
   }
   if (decision === 'verify') {
     return <Navigate to="/verify-email" state={{ from: location }} replace />;

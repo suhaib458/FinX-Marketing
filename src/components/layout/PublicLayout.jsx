@@ -108,8 +108,8 @@ function PublicLayout() {
 
               <div className="landing-nav-actions hide-on-mobile">
                 {isAuthenticated ? (
-                  <button type="button" className="landing-nav-login" onClick={() => navigate('/app')}>
-                    <span>{t.nav.dashboard}</span>
+                  <button type="button" className="landing-nav-login" onClick={() => navigate('/app/create')}>
+                    <span>{t.nav.create}</span>
                     <UserRound size={16} />
                   </button>
                 ) : (
@@ -160,8 +160,8 @@ function PublicLayout() {
                 </Button>
 
                 {isAuthenticated ? (
-                  <Button variant="secondary" size="sm" onClick={() => navigate('/app')}>
-                    {t.nav.dashboard}
+                  <Button variant="secondary" size="sm" onClick={() => navigate('/app/create')}>
+                    {t.nav.create}
                   </Button>
                 ) : (
                   <>
@@ -233,10 +233,10 @@ function PublicLayout() {
                   className="landing-mobile-menu__primary"
                   onClick={() => {
                     setMobileMenuOpen(false);
-                    navigate('/app');
+                    navigate('/app/create');
                   }}
                 >
-                  <span>{t.nav.dashboard}</span>
+                  <span>{t.nav.create}</span>
                   <UserRound size={16} />
                 </button>
               ) : (
@@ -287,8 +287,8 @@ function PublicLayout() {
                 </Button>
               </div>
               {isAuthenticated ? (
-                <Button variant="primary" fullWidth onClick={() => navigate('/app')}>
-                  {t.nav.dashboard}
+                <Button variant="primary" fullWidth onClick={() => navigate('/app/create')}>
+                  {t.nav.create}
                 </Button>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>

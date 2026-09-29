@@ -47,6 +47,8 @@ const en = {
     jod: 'JOD',
     free: 'Free',
     credits: 'Credits',
+    creditUnit: 'credits',
+    currentBrand: 'Current Brand',
     viewAll: 'View All',
     comingSoon: 'Coming Soon',
   },
@@ -54,7 +56,6 @@ const en = {
   // ─── Navigation ───
   nav: {
     home: 'Home',
-    dashboard: 'Dashboard',
     create: 'Create',
     library: 'Library',
     analytics: 'Analytics',
@@ -201,28 +202,6 @@ const en = {
     welcomeMessage: 'Your account is ready!',
   },
 
-  // ─── Dashboard ───
-  dashboard: {
-    greeting: 'Hello',
-    subtitle: 'What would you like to create today?',
-    createNew: 'Create New Content',
-    creditsRemaining: 'Credits Remaining',
-    contentCreated: 'Content Created',
-    savedItems: 'Saved Items',
-    currentBrand: 'Current Brand',
-    recentActivity: 'Recent Activity',
-    noActivity: 'No activity yet. Start creating your first content!',
-    createFirst: 'Create your first content',
-    quickActions: 'Quick Actions',
-    suggestedActions: 'Smart Suggestions',
-    suggestPost: 'Create an Instagram post for',
-    suggestIdeas: 'Discover content ideas for this week',
-    suggestCampaign: 'Build a 7-day campaign for',
-    toolCost: 'Cost',
-    creditUnit: 'credits',
-    viewResult: 'View Result',
-  },
-
   // ─── Tools ───
   tools: {
     socialPost: {
@@ -335,7 +314,7 @@ const en = {
     copyCampaign: 'Copy Campaign',
     downloadDesign: 'Download Design',
     createAnother: 'Create Another',
-    backToDashboard: 'Back to Dashboard',
+    backToCreate: 'Back to Create',
     notFound: 'Result not found',
     notFoundDesc: 'This result may have been deleted or expired.',
     headline: 'Headline',

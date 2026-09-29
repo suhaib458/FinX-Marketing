@@ -129,7 +129,7 @@ function Settings() {
               <div className="settings-preference-row__icon"><Palette size={19} /></div>
               <div>
                 <strong>{t.settings.editBrand}</strong>
-                <span>{t.dashboard.currentBrand}</span>
+                <span>{t.common.currentBrand}</span>
               </div>
             </div>
             <Pencil size={16} className="settings-preference-row__action" />

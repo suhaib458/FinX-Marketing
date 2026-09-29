@@ -774,7 +774,7 @@ function CreateContent() {
         <div className="create-form-footer">
           <div className="create-cost-display">
             <Zap size={16} style={{ color: canAfford ? 'var(--color-accent)' : 'var(--color-error)' }} />
-            <span>{cost} {t.dashboard.creditUnit}</span>
+            <span>{cost} {t.common.creditUnit}</span>
             {!canAfford && (
               <span className="create-cost-warning">{t.generation.insufficientCredits}</span>
             )}

@@ -47,6 +47,8 @@ const ar = {
     jod: 'د.أ',
     free: 'مجاني',
     credits: 'رصيد',
+    creditUnit: 'رصيد',
+    currentBrand: 'العلامة الحالية',
     viewAll: 'عرض الكل',
     comingSoon: 'قريباً',
   },
@@ -54,7 +56,6 @@ const ar = {
   // ─── Navigation ───
   nav: {
     home: 'الرئيسية',
-    dashboard: 'لوحة التحكم',
     create: 'إنشاء',
     library: 'المكتبة',
     analytics: 'التحليلات',
@@ -201,28 +202,6 @@ const ar = {
     welcomeMessage: 'تم إعداد حسابك بنجاح!',
   },
 
-  // ─── Dashboard ───
-  dashboard: {
-    greeting: 'مرحباً',
-    subtitle: 'ماذا تريد أن تنشئ اليوم؟',
-    createNew: 'إنشاء محتوى جديد',
-    creditsRemaining: 'رصيد متبقي',
-    contentCreated: 'محتوى تم إنشاؤه',
-    savedItems: 'عناصر محفوظة',
-    currentBrand: 'العلامة الحالية',
-    recentActivity: 'النشاط الأخير',
-    noActivity: 'لا يوجد نشاط بعد. ابدأ بإنشاء محتواك الأول!',
-    createFirst: 'أنشئ محتواك الأول',
-    quickActions: 'إجراءات سريعة',
-    suggestedActions: 'اقتراحات ذكية',
-    suggestPost: 'أنشئ منشور انستغرام لـ',
-    suggestIdeas: 'اكتشف أفكار محتوى هذا الأسبوع',
-    suggestCampaign: 'ابنِ حملة 7 أيام لـ',
-    toolCost: 'التكلفة',
-    creditUnit: 'رصيد',
-    viewResult: 'عرض النتيجة',
-  },
-
   // ─── Tools ───
   tools: {
     socialPost: {
@@ -335,7 +314,7 @@ const ar = {
     copyCampaign: 'نسخ الحملة',
     downloadDesign: 'تحميل التصميم',
     createAnother: 'إنشاء محتوى آخر',
-    backToDashboard: 'العودة للوحة التحكم',
+    backToCreate: 'العودة للإنشاء',
     notFound: 'لم يتم العثور على النتيجة',
     notFoundDesc: 'قد تكون هذه النتيجة حُذفت أو انتهت صلاحيتها.',
     headline: 'العنوان',

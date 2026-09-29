@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import {
-  LayoutDashboard, PlusCircle, Plus, FolderOpen, BarChart3, Settings,
+  PlusCircle, FolderOpen, BarChart3, Settings,
   Sun, Moon, Globe, Menu, LogOut, Zap, Crown
 } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
@@ -13,14 +13,16 @@ import Button from '../ui/Button';
 import { useAppData } from '../../context/AppDataContext';
 
 const navItems = [
-  { key: 'dashboard', path: '/app', icon: LayoutDashboard, end: true },
   { key: 'create', path: '/app/create', icon: PlusCircle },
   { key: 'library', path: '/app/library', icon: FolderOpen },
   { key: 'analytics', path: '/app/analytics', icon: BarChart3 },
   { key: 'settings', path: '/app/settings', icon: Settings },
 ];
 
-const mobileNavItems = navItems.filter((item) => item.key !== 'create');
+const mobileNavItems = [
+  ...navItems,
+  { key: 'plans', path: '/app/plans', icon: Crown },
+];
 
 function AppLayout() {
   const { toggleTheme, isDark } = useTheme();
@@ -64,7 +66,7 @@ function AppLayout() {
       {/* Sidebar */}
       <aside className={`sidebar ${sidebarOpen ? 'sidebar--open' : ''}`}>
         <div className="sidebar__header">
-          <NavLink to="/app" className="sidebar__logo" onClick={closeSidebar}>
+          <NavLink to="/app/create" className="sidebar__logo" onClick={closeSidebar}>
             <div className="sidebar__logo-mark" lang="en">FX</div>
             <span className="sidebar__logo-text" lang="en">FinX</span>
           </NavLink>
@@ -100,7 +102,7 @@ function AppLayout() {
           <div className="sidebar__credits-info">
             <Zap size={16} style={{ color: 'var(--color-accent)' }} />
             <span className="sidebar__credits-value">{credits}</span>
-            <span className="sidebar__credits-label">{t.dashboard.creditUnit}</span>
+            <span className="sidebar__credits-label">{t.common.creditUnit}</span>
           </div>
           <div className="sidebar__credits-bar">
             <div className="sidebar__credits-bar-fill" style={{ width: `${Math.min(credits, 100)}%` }} />
@@ -193,34 +195,7 @@ function AppLayout() {
       {/* Bottom Navigation (Mobile) */}
       <nav className="bottom-nav" role="navigation" aria-label="Mobile navigation">
         <div className="bottom-nav__items">
-          {mobileNavItems.slice(0, 2).map((item) => {
-            const isActive = item.end
-              ? location.pathname === item.path
-              : location.pathname.startsWith(item.path);
-
-            return (
-              <NavLink
-                key={item.key}
-                to={item.path}
-                end={item.end}
-                className={`bottom-nav__item ${isActive ? 'bottom-nav__item--active' : ''}`}
-              >
-                <item.icon className="bottom-nav__item-icon" size={21} />
-                <span className="bottom-nav__item-label">{t.nav[item.key]}</span>
-              </NavLink>
-            );
-          })}
-
-          <NavLink
-            to="/app/create"
-            className="bottom-nav__create-fab"
-            aria-label={t.nav.create}
-            title={t.nav.create}
-          >
-            <Plus size={29} strokeWidth={2} />
-          </NavLink>
-
-          {mobileNavItems.slice(2).map((item) => {
+          {mobileNavItems.map((item) => {
             const isActive = location.pathname.startsWith(item.path);
 
             return (
@@ -230,7 +205,9 @@ function AppLayout() {
                 className={`bottom-nav__item ${isActive ? 'bottom-nav__item--active' : ''}`}
               >
                 <item.icon className="bottom-nav__item-icon" size={21} />
-                <span className="bottom-nav__item-label">{t.nav[item.key]}</span>
+                <span className="bottom-nav__item-label">
+                  {item.key === 'plans' ? t.settings.upgradePlan : t.nav[item.key]}
+                </span>
               </NavLink>
             );
           })}
