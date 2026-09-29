@@ -19,10 +19,7 @@ const navItems = [
   { key: 'settings', path: '/app/settings', icon: Settings },
 ];
 
-const mobileNavItems = [
-  ...navItems,
-  { key: 'plans', path: '/app/plans', icon: Crown },
-];
+const mobileNavItems = navItems;
 
 function AppLayout() {
   const { toggleTheme, isDark } = useTheme();
@@ -205,9 +202,7 @@ function AppLayout() {
                 className={`bottom-nav__item ${isActive ? 'bottom-nav__item--active' : ''}`}
               >
                 <item.icon className="bottom-nav__item-icon" size={21} />
-                <span className="bottom-nav__item-label">
-                  {item.key === 'plans' ? t.settings.upgradePlan : t.nav[item.key]}
-                </span>
+                <span className="bottom-nav__item-label">{t.nav[item.key]}</span>
               </NavLink>
             );
           })}

@@ -33,7 +33,7 @@ function renderAppLayout() {
 }
 
 describe('app navigation', () => {
-  it('keeps Create first and exposes the same Dashboard-free destinations on desktop and mobile', () => {
+  it('keeps Create first and omits plan upgrades from the mobile navigation', () => {
     const { container } = renderAppLayout();
 
     const desktopLinks = within(container.querySelector('.sidebar__nav')).getAllByRole('link');
@@ -51,7 +51,6 @@ describe('app navigation', () => {
       '/app/library',
       '/app/analytics',
       '/app/settings',
-      '/app/plans',
     ]);
     expect(screen.queryByText('لوحة التحكم')).not.toBeInTheDocument();
   });
